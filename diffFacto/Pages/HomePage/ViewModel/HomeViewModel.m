@@ -12,7 +12,7 @@
 - (void)loadData {
     // 初始化两个按钮数据
     HomeModel *newCreate = [[HomeModel alloc] initWithTitle:@"新的创作" jumpVCName:@"CarouselViewController"];
-    HomeModel *myDesign = [[HomeModel alloc] initWithTitle:@"我的设计" jumpVCName:@"CarouselViewController"];
+    HomeModel *myDesign = [[HomeModel alloc] initWithTitle:@"我的设计" jumpVCName:@"MyDesignViewController"];
     _itemList = @[newCreate, myDesign];
     _selectedIndex = -1; // 默认无选中
 }

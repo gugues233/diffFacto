@@ -42,6 +42,15 @@
     self.nextButton.clipsToBounds = YES;
     [self.nextButton addTarget:self action:@selector(onNext) forControlEvents:UIControlEventTouchUpInside];
     [self.view addSubview:self.nextButton];
+    
+    // 👇 右滑关闭
+    UISwipeGestureRecognizer *swipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(dismissSelf)];
+    swipe.direction = UISwipeGestureRecognizerDirectionRight;
+    [self.view addGestureRecognizer:swipe];
+}
+
+- (void)dismissSelf {
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 - (void)carouselDidSelectIndex:(NSInteger)index {
