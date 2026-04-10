@@ -27,15 +27,15 @@
 // 创建页面并加入tabbar
 - (void)setUpViewControllers {
     // 1. 创建所有页面
-   CarouselViewController *carousel = [[CarouselViewController alloc] init];
-   HomeViewController *home = [[HomeViewController alloc] init];
+    HomeViewController *home = [[HomeViewController alloc] init];
+    CarouselViewController *carousel = [[CarouselViewController alloc] init];
     
     // 2. 设置tab内容
-   carousel.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"创作" image:nil tag:0];
-   home.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"设计室" image:nil tag:1];
+    home.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"创作" image:nil tag:0];
+    carousel.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"设计室" image:nil tag:1];
     
     // 3. 把自己的子页面 赋值给自己
-    self.viewControllers = @[carousel, home];
+    self.viewControllers = @[home, carousel];
 }
 
 // 设置tabbar中文字样式
