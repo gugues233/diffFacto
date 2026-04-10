@@ -33,6 +33,7 @@
     self.blurView = [[UIVisualEffectView alloc] initWithEffect:effect];
     self.blurView.layer.cornerRadius = kCornerRadius;
     self.blurView.clipsToBounds = YES;
+    self.blurView.userInteractionEnabled = NO; // 禁用blurView的用户交互，避免拦截点击事件
     // 默认边框（透明）
     self.layer.borderColor = [[UIColor whiteColor] colorWithAlphaComponent:0.3].CGColor;
     self.layer.borderWidth = 1;

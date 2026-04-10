@@ -26,16 +26,20 @@
 
 // 创建页面并加入tabbar
 - (void)setUpViewControllers {
-    // 1. 创建所有页面
+    // 1. 创建业务控制器
     HomeViewController *home = [[HomeViewController alloc] init];
     CarouselViewController *carousel = [[CarouselViewController alloc] init];
     
-    // 2. 设置tab内容
-    home.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"创作" image:nil tag:0];
-    carousel.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"设计室" image:nil tag:1];
+    // 2. 包裹导航控制器（核心步骤）
+    UINavigationController *homeNav = [[UINavigationController alloc] initWithRootViewController:home];
+    UINavigationController *carouselNav = [[UINavigationController alloc] initWithRootViewController:carousel];
     
-    // 3. 把自己的子页面 赋值给自己
-    self.viewControllers = @[home, carousel];
+    // 3. 给导航控制器设置TabBarItem（而非直接给业务控制器）
+    homeNav.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"创作" image:nil tag:0];
+    carouselNav.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"设计室" image:nil tag:1];
+    
+    // 4. TabBar的子控制器改为导航控制器数组
+    self.viewControllers = @[homeNav, carouselNav];
 }
 
 // 设置tabbar中文字样式
