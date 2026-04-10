@@ -8,6 +8,7 @@
 #import "CarouselViewController.h"
 #import "VCarouselView.h"
 #import "CarouselViewModel.h"
+#import "CreatePageViewController.h"
 
 @interface CarouselViewController () <VCarouselViewDelegate>
 @property (nonatomic, strong) VCarouselView *carouselView;
@@ -50,6 +51,10 @@
 
 - (void)onNext {
     NSLog(@"点击下一步 → 选中：%@", self.viewModel.dataArray[self.carouselView.currentIndex].title);
+    CreatePageViewController *vc = [[CreatePageViewController alloc] init];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:nav animated:YES completion:nil];
 }
 
 @end
