@@ -8,6 +8,7 @@
 #import "DesignPreviewViewController.h"
 #import "DesignPreviewMainView.h"
 #import "DesignPreviewViewModel.h"
+#import "CreatePageViewController.h"
 #import <Photos/Photos.h>
 
 @interface DesignPreviewViewController () <DesignPreviewMainViewDelegate, MoreActionMenuViewDelegate>
@@ -31,6 +32,17 @@
     self.navigationController.navigationBar.hidden = YES;
     [self setupViewModel];
     [self setupMainView];
+    
+    __weak typeof(self) weakSelf = self;
+    self.mainView.applyButtonBlock = ^{
+        [weakSelf applyButtonClick];
+    };
+    
+    if (self.model.isMyModel) {
+        [self.mainView showMyModelUI];
+    } else {
+        [self.mainView showOtherModelUI];
+    }
 }
 
 - (void)setupViewModel {
@@ -50,6 +62,15 @@
 #pragma mark - DesignPreviewMainViewDelegate
 - (void)backButtonDidClick {
     [self.navigationController popViewControllerAnimated:YES];
+}
+
+- (void)applyButtonClick {
+    NSArray *history = [self.viewModel getCreateHistory];
+
+    // 👇 关键：强制转换成正确的类，编译器就认识了
+    CreatePageViewController *createVC = [[CreatePageViewController alloc] initWithHistory:history];
+
+    [self.navigationController pushViewController:createVC animated:YES];
 }
 
 - (void)moreButtonDidClick {

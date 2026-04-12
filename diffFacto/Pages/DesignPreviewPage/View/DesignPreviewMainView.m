@@ -36,6 +36,15 @@
     [self.moreButton addTarget:self action:@selector(moreClick) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:self.moreButton];
     
+    // 应用按钮
+    self.applyButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    self.applyButton.frame = CGRectMake(self.bounds.size.width-80, 54, 60, 32);
+    [self.applyButton setTitle:@"应用" forState:0];
+    [self.applyButton setTitleColor:[UIColor systemBlueColor] forState:0];
+    [self.applyButton addTarget:self action:@selector(applyClick) forControlEvents:UIControlEventTouchUpInside];
+    [self addSubview:self.applyButton];
+    self.applyButton.hidden = YES;
+    
     // 操作菜单
     self.actionMenuView = [[MoreActionMenuView alloc] initWithFrame:CGRectZero];
     [self addSubview:self.actionMenuView];
@@ -61,6 +70,18 @@
 
 - (void)updatePublicStatus:(BOOL)isPublic {
     self.actionMenuView.isPublic = isPublic;
+}
+
+- (void)applyClick {
+    if (self.applyButtonBlock) self.applyButtonBlock();
+}
+- (void)showMyModelUI {
+    self.moreButton.hidden = NO;
+    self.applyButton.hidden = YES;
+}
+- (void)showOtherModelUI {
+    self.moreButton.hidden = YES;
+    self.applyButton.hidden = NO;
 }
 
 @end

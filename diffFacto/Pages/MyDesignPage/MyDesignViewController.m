@@ -95,6 +95,7 @@
     NSLog(@"点击放大：%@", model.modelId);
     // 转换为预览页模型
     DesignPreviewModel *previewModel = [[DesignPreviewModel alloc] initWithModelId:model.modelId data:model.pointCloudData previewImage:model.previewImage];
+    previewModel.isMyModel = YES;
     DesignPreviewViewController *previewVC = [[DesignPreviewViewController alloc] initWithModel:previewModel];
     [self.navigationController pushViewController:previewVC animated:YES];
 }

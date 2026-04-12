@@ -20,6 +20,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)selectItemAtIndex:(NSInteger)itemIndex categoryIndex:(NSInteger)categoryIndex completion:(void(^)(BOOL success))completion;
 - (void)startGenerateCompletion:(void(^)(BOOL success, id _Nullable result))completion progress:(void(^)(CGFloat progress))progressBlock;
 - (void)resetAllSelection;
+- (void)restoreSelectedItem:(id)item categoryIndex:(NSInteger)cIndex;
 @end
 
 NS_ASSUME_NONNULL_END

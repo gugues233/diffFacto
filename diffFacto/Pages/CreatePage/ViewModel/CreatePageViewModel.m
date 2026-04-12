@@ -107,4 +107,32 @@
     _selectedList = @[];
     _generateProgress = 0;
 }
+
+- (void)restoreSelectedItem:(id)item categoryIndex:(NSInteger)cIndex {
+    if (cIndex >= self.categoryList.count) return;
+    
+    // 取出分类
+    id category = self.categoryList[cIndex];
+    
+    // 用 KVC 取 itemList（兼容 id 类型，不报错）
+    NSArray *itemList = [category valueForKey:@"itemList"];
+    
+    // 遍历对比
+    for (id obj in itemList) {
+        // 对比 itemId（安全判断）
+        if ([obj isEqual:item]) {
+            NSInteger index = [itemList indexOfObject:obj];
+            [self selectItemAtIndex:index categoryIndex:cIndex completion:nil];
+            break;
+        }
+        
+        id objId = [obj valueForKey:@"itemId"];
+        id itemId = [item valueForKey:@"itemId"];
+        if (objId && itemId && [objId isEqual:itemId]) {
+            NSInteger index = [itemList indexOfObject:obj];
+            [self selectItemAtIndex:index categoryIndex:cIndex completion:nil];
+            break;
+        }
+    }
+}
 @end

@@ -22,6 +22,12 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) MoreActionMenuView *actionMenuView;
 @property (nonatomic, strong) UIButton *backButton;
 @property (nonatomic, strong) UIButton *moreButton;
+@property (nonatomic, strong) UIButton *applyButton;
+
+- (void)showMyModelUI;
+- (void)showOtherModelUI;
+
+@property (nonatomic, copy) dispatch_block_t applyButtonBlock;
 
 - (void)loadPointCloudData:(id)data;
 - (void)updatePublicStatus:(BOOL)isPublic;

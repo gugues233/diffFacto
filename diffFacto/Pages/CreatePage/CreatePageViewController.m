@@ -9,10 +9,12 @@
 #import "CreatePageMainView.h"
 #import "CreatePageViewModel.h"
 #import "CategoryItemCell.h"
+#import "CreateHistoryModel.h"
 
 @interface CreatePageViewController () <CreatePageMainViewDelegate, CategoryScrollViewDelegate>
 @property (nonatomic, strong) CreatePageMainView *mainView;
 @property (nonatomic, strong) CreatePageViewModel *viewModel;
+@property (nonatomic, strong) NSArray<CreateHistoryModel *> *historyList;
 @end
 
 @implementation CreatePageViewController
@@ -22,6 +24,8 @@
     [self setupViewModel];
     [self setupMainView];
     
+    [self restoreFromHistory];
+    
     // 👇 右滑关闭
     UISwipeGestureRecognizer *swipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(dismissSelf)];
     swipe.direction = UISwipeGestureRecognizerDirectionRight;
@@ -30,6 +34,16 @@
 
 - (void)dismissSelf {
     [self dismissViewControllerAnimated:YES completion:nil];
+}
+
+- (void)restoreFromHistory {
+    if (!self.historyList.count) return;
+    for (CreateHistoryModel *h in self.historyList) {
+        NSInteger cIndex = h.categoryIndex;
+        if (cIndex >= self.viewModel.categoryList.count) continue;
+        id item = h.selectedItem;
+        [self.viewModel restoreSelectedItem:item categoryIndex:cIndex];
+    }
 }
 
 - (void)setupViewModel {
@@ -71,6 +85,14 @@
         __strong typeof(weakSelf) strongSelf = weakSelf;
         [strongSelf.mainView updateGenerateProgress:progress];
     }];
+}
+
+- (instancetype)initWithHistory:(NSArray<CreateHistoryModel *> *)history {
+    self = [super init];
+    if (self) {
+        _historyList = history;
+    }
+    return self;
 }
 
 @end

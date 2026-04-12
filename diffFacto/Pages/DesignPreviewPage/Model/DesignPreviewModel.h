@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import "CreateHistoryModel.h"
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -16,6 +17,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) UIImage *previewImage;// 预览图
 @property (nonatomic, assign) BOOL isPublic;        // 是否公开
 @property (nonatomic, copy) NSString *createTime;    // 创建时间
+@property (nonatomic, assign) BOOL isMyModel;
+@property (nonatomic, strong) NSArray<CreateHistoryModel *> *createHistoryList;
 
 - (instancetype)initWithModelId:(NSString *)modelId data:(id)data previewImage:(UIImage *)previewImage;
 @end

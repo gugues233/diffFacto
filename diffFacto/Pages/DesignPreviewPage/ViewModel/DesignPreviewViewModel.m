@@ -28,4 +28,9 @@
     // 实际项目：更新后端公开状态
     NSLog(@"切换公开状态：%@ -> %@", self.model.modelId, self.model.isPublic ? @"公开" : @"私有");
 }
+
+- (NSArray<CreateHistoryModel *> *)getCreateHistory {
+    return self.model.createHistoryList;
+}
+
 @end

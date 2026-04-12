@@ -43,6 +43,7 @@
     // 点击放大：跳转到3D预览页
     DesignStudioModel *model = self.viewModel.modelList[index];
     DesignPreviewModel *previewModel = [[DesignPreviewModel alloc] initWithModelId:model.modelId data:model.pointCloudData previewImage:model.previewImage];
+    previewModel.isMyModel = NO;
     DesignPreviewViewController *previewVC = [[DesignPreviewViewController alloc] initWithModel:previewModel];
     [self.navigationController pushViewController:previewVC animated:YES];
 }

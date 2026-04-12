@@ -17,6 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)saveAsImage;            // 另存为图片
 - (void)deleteModel;            // 删除模型
 - (void)togglePublicStatus;     // 切换公开状态
+- (NSArray<CreateHistoryModel *> *)getCreateHistory;  // 得到历史记录
 @end
 
 NS_ASSUME_NONNULL_END
