@@ -8,6 +8,7 @@
 #import "MainTabController.h"
 #import "CarouselViewController.h"
 #import "HomeViewController.h"
+#import "DesignStudioViewController.h"
 
 #define TextSize 20
 
@@ -28,11 +29,11 @@
 - (void)setUpViewControllers {
     // 1. 创建业务控制器
     HomeViewController *home = [[HomeViewController alloc] init];
-    CarouselViewController *carousel = [[CarouselViewController alloc] init];
+    DesignStudioViewController *designStudio = [[DesignStudioViewController alloc] init];
     
     // 2. 包裹导航控制器（核心步骤）
     UINavigationController *homeNav = [[UINavigationController alloc] initWithRootViewController:home];
-    UINavigationController *carouselNav = [[UINavigationController alloc] initWithRootViewController:carousel];
+    UINavigationController *carouselNav = [[UINavigationController alloc] initWithRootViewController:designStudio];
     
     // 3. 给导航控制器设置TabBarItem（而非直接给业务控制器）
     homeNav.tabBarItem = [[UITabBarItem alloc] initWithTitle:@"创作" image:nil tag:0];
