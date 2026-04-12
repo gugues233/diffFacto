@@ -8,6 +8,8 @@
 #import "MyDesignViewController.h"
 #import "MyDesignMainView.h"
 #import "MyDesignViewModel.h"
+#import "DesignPreviewModel.h"
+#import "DesignPreviewViewController.h"
 
 @interface MyDesignViewController () <MyDesignMainViewDelegate, MyDesignCollectionViewDelegate>
 @property (nonatomic, strong) MyDesignMainView *mainView;
@@ -89,6 +91,10 @@
     // 点击放大逻辑（可自行实现预览页）
     MyDesignModel *model = self.viewModel.modelList[index];
     NSLog(@"点击放大：%@", model.modelId);
+    // 转换为预览页模型
+    DesignPreviewModel *previewModel = [[DesignPreviewModel alloc] initWithModelId:model.modelId data:model.pointCloudData previewImage:model.previewImage];
+    DesignPreviewViewController *previewVC = [[DesignPreviewViewController alloc] initWithModel:previewModel];
+    [self.navigationController pushViewController:previewVC animated:YES];
 }
 
 - (void)showMaxSelectAlert {

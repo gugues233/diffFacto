@@ -1,0 +1,24 @@
+//
+//  DesignPreviewModel.m
+//  diffFacto
+//
+//  Created by gugues Lin on 2026/4/12.
+//
+
+#import "DesignPreviewModel.h"
+
+@implementation DesignPreviewModel
+- (instancetype)initWithModelId:(NSString *)modelId data:(id)data previewImage:(UIImage *)previewImage {
+    self = [super init];
+    if (self) {
+        _modelId = modelId;
+        _pointCloudData = data;
+        _previewImage = previewImage;
+        _isPublic = NO;
+        NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
+        formatter.dateFormat = @"yyyy-MM-dd HH:mm";
+        _createTime = [formatter stringFromDate:[NSDate date]];
+    }
+    return self;
+}
+@end
