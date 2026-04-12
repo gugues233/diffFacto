@@ -10,6 +10,8 @@
 #import "MyDesignViewModel.h"
 #import "DesignPreviewModel.h"
 #import "DesignPreviewViewController.h"
+#import "DesignCompareModel.h"
+#import "DesignCompareViewController.h"
 
 @interface MyDesignViewController () <MyDesignMainViewDelegate, MyDesignCollectionViewDelegate>
 @property (nonatomic, strong) MyDesignMainView *mainView;
@@ -113,6 +115,31 @@
     NSArray *selected = self.viewModel.selectedList;
     NSLog(@"对比模型：%@, %@", [selected[0] modelId], [selected[1] modelId]);
     // 这里可实现跳转到对比页的逻辑
+    
+    MyDesignModel *first = selected[0];
+    MyDesignModel *second = selected[1];
+    
+    // TODO: zxy-这里为了查看效果直接替代了数据，之后需要处理
+    // 渲染点云（替换为真实数据）
+    SCNNode *pointCloudNode = [[SCNNode alloc] init];
+    for (int i=0; i<2000; i++) {
+        SCNSphere *sphere = [SCNSphere sphereWithRadius:0.008];
+        SCNNode *node = [SCNNode nodeWithGeometry:sphere];
+        node.position = SCNVector3Make(arc4random()%100/100.0 - 0.5, arc4random()%100/100.0 - 0.5, arc4random()%100/100.0 - 0.5);
+        node.geometry.firstMaterial.diffuse.contents = [UIColor systemBlueColor];
+        [pointCloudNode addChildNode:node];
+    }
+    first.pointCloudData = pointCloudNode;
+    second.pointCloudData = pointCloudNode;
+    
+    
+    // 转换为对比页模型
+    DesignCompareModel *firstCompare = [[DesignCompareModel alloc] initWithModelId:first.modelId data:first.pointCloudData previewImage:first.previewImage];
+    DesignCompareModel *secondCompare = [[DesignCompareModel alloc] initWithModelId:second.modelId data:second.pointCloudData previewImage:second.previewImage];
+    
+    // 跳转到对比页
+    DesignCompareViewController *compareVC = [[DesignCompareViewController alloc] initWithFirstModel:firstCompare secondModel:secondCompare];
+    [self.navigationController pushViewController:compareVC animated:YES];
 }
 
 - (void)viewWillDisappear:(BOOL)animated {
