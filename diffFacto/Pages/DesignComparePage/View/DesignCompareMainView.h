@@ -19,6 +19,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) DesignCompare3DView *top3DView;
 @property (nonatomic, strong) DesignCompare3DView *bottom3DView;
 @property (nonatomic, strong) UIButton *backButton;
+@property (nonatomic, assign) BOOL isGlobalSyncing; // 全局同步标志，防止循环同步
 
 - (void)loadFirstModelData:(id)firstData secondModelData:(id)secondData;
 - (void)setupSyncBetweenViews;

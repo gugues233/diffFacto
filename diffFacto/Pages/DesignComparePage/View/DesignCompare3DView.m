@@ -23,6 +23,7 @@
     self.scnView.allowsCameraControl = YES; // 支持手势旋转/缩放
     self.scnView.autoenablesDefaultLighting = YES;
     self.scnView.showsStatistics = NO;
+    self.scnView.delegate = self; // 设置渲染代理
     
     SCNScene *scene = [SCNScene scene];
     self.scnView.scene = scene; // 重要：设置场景
@@ -35,25 +36,59 @@
     [scene.rootNode addChildNode:cameraNode];
     self.scnView.pointOfView = cameraNode;
     
+    // 初始化上一次相机状态
+    self.lastCameraPosition = cameraNode.position;
+    self.lastCameraEulerAngles = cameraNode.eulerAngles;
+    
     [self addSubview:self.scnView];
 }
 
 - (void)addCameraObserver {
-    // 监听相机位置/角度变化，触发同步回调
-    [self.scnView.pointOfView addObserver:self forKeyPath:@"position" options:NSKeyValueObservingOptionNew context:nil];
-    [self.scnView.pointOfView addObserver:self forKeyPath:@"eulerAngles" options:NSKeyValueObservingOptionNew context:nil];
-    [self.scnView addObserver:self forKeyPath:@"pointOfView.camera.zFar" options:NSKeyValueObservingOptionNew context:nil];
+    // 不再使用KVO，改用SCNSceneRendererDelegate
 }
 
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context {
-    // 如果正在同步，不触发回调，防止循环调用
+#pragma mark - SCNSceneRendererDelegate
+- (void)renderer:(id<SCNSceneRenderer>)renderer updateAtTime:(NSTimeInterval)time {
+    // 如果正在同步，跳过检查
     if (self.isSyncing) {
-        NSLog(@"⏭️ Skipping KVO callback during sync");
         return;
     }
     
-    if ([keyPath isEqualToString:@"position"] || [keyPath isEqualToString:@"eulerAngles"] || [keyPath isEqualToString:@"pointOfView.camera.zFar"]) {
-        NSLog(@"📷 Camera changed: %@, triggering sync", keyPath);
+    SCNNode *cameraNode = self.scnView.pointOfView;
+    if (!cameraNode) {
+        return;
+    }
+    
+    // 检查相机位置或角度是否发生变化
+    SCNVector3 currentPosition = cameraNode.position;
+    SCNVector3 currentEulerAngles = cameraNode.eulerAngles;
+    
+    // 计算位置变化距离
+    CGFloat dx = currentPosition.x - self.lastCameraPosition.x;
+    CGFloat dy = currentPosition.y - self.lastCameraPosition.y;
+    CGFloat dz = currentPosition.z - self.lastCameraPosition.z;
+    CGFloat distance = sqrt(dx*dx + dy*dy + dz*dz);
+    
+    // 计算角度变化
+    CGFloat angleX = fabs(currentEulerAngles.x - self.lastCameraEulerAngles.x);
+    CGFloat angleY = fabs(currentEulerAngles.y - self.lastCameraEulerAngles.y);
+    CGFloat angleZ = fabs(currentEulerAngles.z - self.lastCameraEulerAngles.z);
+    CGFloat maxAngleChange = MAX(MAX(angleX, angleY), angleZ);
+    
+    // 设置阈值，只有变化超过阈值才触发同步
+    CGFloat positionThreshold = 0.01; // 位置变化阈值
+    CGFloat angleThreshold = 0.01;    // 角度变化阈值（弧度）
+    
+    BOOL positionChanged = distance > positionThreshold;
+    BOOL angleChanged = maxAngleChange > angleThreshold;
+    
+    if (positionChanged || angleChanged) {
+        
+        // 更新上一次状态
+        self.lastCameraPosition = currentPosition;
+        self.lastCameraEulerAngles = currentEulerAngles;
+        
+        // 触发同步回调
         if (self.cameraChangeBlock) {
             self.cameraChangeBlock(self.scnView);
         }
@@ -61,9 +96,6 @@
 }
 
 - (void)loadPointCloudData:(id)pointCloudData {
-    NSLog(@"📍 loadPointCloudData called, data type: %@", [pointCloudData class]);
-    NSLog(@"📍 Current pointOfView: %@", self.scnView.pointOfView);
-    NSLog(@"📍 Scene has %ld child nodes before clearing", (long)self.scnView.scene.rootNode.childNodes.count);
     
     // 保存相机节点引用
     SCNNode *cameraNode = self.scnView.pointOfView;
@@ -73,23 +105,16 @@
     for (SCNNode *child in childNodes) {
         // 使用指针比较，而不是isEqual:
         if (child != cameraNode) {
-            NSLog(@"📍 Removing child: %@", child);
             [child removeFromParentNode];
-        } else {
-            NSLog(@"📍 Keeping camera node: %@", child);
         }
     }
     
-    NSLog(@"📍 Scene has %ld child nodes after clearing", (long)self.scnView.scene.rootNode.childNodes.count);
     
     // 检查传入的数据类型
     if ([pointCloudData isKindOfClass:[SCNNode class]]) {
-        NSLog(@"✅ Data is SCNNode, adding to scene");
         SCNNode *node = (SCNNode *)pointCloudData;
-        NSLog(@"   Node has %ld child nodes", (long)node.childNodes.count);
         [self.scnView.scene.rootNode addChildNode:node];
     } else {
-        NSLog(@"⚠️ Data is not SCNNode, creating mock data");
         // 否则创建模拟点云
         SCNNode *pointCloudNode = [[SCNNode alloc] init];
         for (int i=0; i<2000; i++) {
@@ -102,48 +127,46 @@
         [self.scnView.scene.rootNode addChildNode:pointCloudNode];
     }
     
-    NSLog(@"📍 Scene now has %ld child nodes", (long)self.scnView.scene.rootNode.childNodes.count);
-    NSLog(@"📍 pointOfView is still: %@", self.scnView.pointOfView);
-    
-    // 确保相机节点仍然存在
     if (!self.scnView.pointOfView && cameraNode) {
-        NSLog(@"⚠️ pointOfView was lost, restoring it");
         self.scnView.pointOfView = cameraNode;
     }
 }
 
 - (void)syncCameraFromView:(SCNView *)sourceView {
-    NSLog(@"🔄 syncCameraFromView called");
-    
-    // 同步相机状态
     SCNNode *sourceCamera = sourceView.pointOfView;
     SCNNode *targetCamera = self.scnView.pointOfView;
     
     // 空值检查
     if (!sourceCamera || !targetCamera) {
-        NSLog(@"⚠️ Source or target camera is nil");
         return;
     }
     
     // 设置同步标志，防止循环调用
     self.isSyncing = YES;
     
-    NSLog(@"📍 Syncing position from (%.2f, %.2f, %.2f) to (%.2f, %.2f, %.2f)",
-          sourceCamera.position.x, sourceCamera.position.y, sourceCamera.position.z,
-          targetCamera.position.x, targetCamera.position.y, targetCamera.position.z);
+    BOOL wasAllowsCameraControl = self.scnView.allowsCameraControl;
+    self.scnView.allowsCameraControl = NO;
+    
+    [SCNTransaction begin];
+    [SCNTransaction setAnimationDuration:0];
     
     targetCamera.position = sourceCamera.position;
     targetCamera.eulerAngles = sourceCamera.eulerAngles;
+    
+    [SCNTransaction commit];
+    
+    self.lastCameraPosition = targetCamera.position;
+    self.lastCameraEulerAngles = targetCamera.eulerAngles;
     
     // 检查camera是否存在
     if (sourceCamera.camera && targetCamera.camera) {
         targetCamera.camera.zFar = sourceCamera.camera.zFar;
     }
     
-    // 重置同步标志
-    self.isSyncing = NO;
-    
-    NSLog(@"✅ Sync completed");
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.05 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        self.scnView.allowsCameraControl = wasAllowsCameraControl;
+        self.isSyncing = NO;
+    });
 }
 
 - (void)layoutSubviews {
@@ -152,9 +175,6 @@
 }
 
 - (void)dealloc {
-    // 移除KVO监听，防止内存泄漏
-    [self.scnView.pointOfView removeObserver:self forKeyPath:@"position"];
-    [self.scnView.pointOfView removeObserver:self forKeyPath:@"eulerAngles"];
-    [self.scnView removeObserver:self forKeyPath:@"pointOfView.camera.zFar"];
+    // 不再使用KVO，无需移除观察者
 }
 @end

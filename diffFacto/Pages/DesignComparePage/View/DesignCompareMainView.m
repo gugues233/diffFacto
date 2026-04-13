@@ -58,9 +58,6 @@
 }
 
 - (void)loadFirstModelData:(id)firstData secondModelData:(id)secondData {
-    NSLog(@"📍 loadFirstModelData - firstData type: %@", [firstData class]);
-    NSLog(@"📍 loadFirstModelData - secondData type: %@", [secondData class]);
-    
     [self.top3DView loadPointCloudData:firstData];
     [self.bottom3DView loadPointCloudData:secondData];
     [self setupSyncBetweenViews];
@@ -72,13 +69,33 @@
     // 顶部视图变化 → 同步到底部
     self.top3DView.cameraChangeBlock = ^(SCNView *scnView) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf.isGlobalSyncing) {
+            return; // 如果正在全局同步，跳过
+        }
+        
+        strongSelf.isGlobalSyncing = YES;
         [strongSelf.bottom3DView syncCameraFromView:scnView];
+        
+        // 延迟重置标志，确保同步完成
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            strongSelf.isGlobalSyncing = NO;
+        });
     };
     
     // 底部视图变化 → 同步到顶部
     self.bottom3DView.cameraChangeBlock = ^(SCNView *scnView) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf.isGlobalSyncing) {
+            return; // 如果正在全局同步，跳过
+        }
+        
+        strongSelf.isGlobalSyncing = YES;
         [strongSelf.top3DView syncCameraFromView:scnView];
+        
+        // 延迟重置标志，确保同步完成
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+            strongSelf.isGlobalSyncing = NO;
+        });
     };
 }
 
