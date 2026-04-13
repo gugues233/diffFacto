@@ -43,6 +43,10 @@
 - (void)setupMainView {
     self.mainView = [[DesignCompareMainView alloc] initWithFrame:self.view.bounds];
     self.mainView.delegate = self;
+    
+    NSLog(@"📍 setupMainView - firstModel data type: %@", [self.firstModel.pointCloudData class]);
+    NSLog(@"📍 setupMainView - secondModel data type: %@", [self.secondModel.pointCloudData class]);
+    
     [self.mainView loadFirstModelData:self.firstModel.pointCloudData secondModelData:self.secondModel.pointCloudData];
     [self.view addSubview:self.mainView];
 }

@@ -58,6 +58,9 @@
 }
 
 - (void)loadFirstModelData:(id)firstData secondModelData:(id)secondData {
+    NSLog(@"📍 loadFirstModelData - firstData type: %@", [firstData class]);
+    NSLog(@"📍 loadFirstModelData - secondData type: %@", [secondData class]);
+    
     [self.top3DView loadPointCloudData:firstData];
     [self.bottom3DView loadPointCloudData:secondData];
     [self setupSyncBetweenViews];

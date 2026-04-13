@@ -10,21 +10,21 @@
 @implementation DesignCompareViewModel
 - (void)updateCameraState:(SCNView *)scnView {
     SCNNode *cameraNode = scnView.pointOfView;
-    if (!cameraNode) return;
+    if (!cameraNode || !cameraNode.camera) return;
     
     // 同步相机位置、角度、缩放
     _cameraPosition = cameraNode.position;
     _cameraEulerAngles = cameraNode.eulerAngles;
-    _cameraZoom = scnView.pointOfView.camera.zFar;
+    _cameraZoom = cameraNode.camera.zFar;
 }
 
 - (void)syncCameraToView:(SCNView *)targetView {
     SCNNode *cameraNode = targetView.pointOfView;
-    if (!cameraNode) return;
+    if (!cameraNode || !cameraNode.camera) return;
     
     // 应用同步状态
     cameraNode.position = self.cameraPosition;
     cameraNode.eulerAngles = self.cameraEulerAngles;
-    targetView.pointOfView.camera.zFar = self.cameraZoom;
+    cameraNode.camera.zFar = self.cameraZoom;
 }
 @end
