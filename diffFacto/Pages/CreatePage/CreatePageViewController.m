@@ -38,11 +38,24 @@
 
 - (void)restoreFromHistory {
     if (!self.historyList.count) return;
-    for (CreateHistoryModel *h in self.historyList) {
-        NSInteger cIndex = h.categoryIndex;
+    
+    // 获取最近的一条历史记录
+    CreateHistoryModel *latestHistory = self.historyList.firstObject;
+    if (!latestHistory.selectedItems.count) return;
+    
+    // 遍历selectedItems，恢复选择
+    for (CreateSelectedItemModel *selectedItem in latestHistory.selectedItems) {
+        NSInteger cIndex = selectedItem.categoryIndex;
+        NSInteger iIndex = selectedItem.itemIndex;
+        
         if (cIndex >= self.viewModel.categoryList.count) continue;
-        id item = h.selectedItem;
-        [self.viewModel restoreSelectedItem:item categoryIndex:cIndex];
+        if (iIndex < 0) continue;
+        
+        CreateCategoryModel *category = self.viewModel.categoryList[cIndex];
+        if (iIndex >= category.itemList.count) continue;
+        
+        // 直接使用itemIndex来选中对应的item
+        [self.viewModel selectItemAtIndex:iIndex categoryIndex:cIndex completion:nil];
     }
 }
 
@@ -78,11 +91,18 @@
     __weak typeof(self) weakSelf = self;
     [self.viewModel startGenerateCompletion:^(BOOL success, id  _Nullable result) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        if (success) {
+        if (success && result) {
+            // TODO: zxy-是需要在这里加缓存？
+            
+            // ========================
+            // 👉 生成成功 → 缓存结果
+            // ========================
+            [strongSelf.viewModel addGenerateHistory:result];
             [strongSelf.mainView show3DResult:result];
         }
     } progress:^(CGFloat progress) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
+        // TODO: zxy-生成进度这里，生成新的的时候，没有清空旧的，而且第二次进度条不是从0开始
         [strongSelf.mainView updateGenerateProgress:progress];
     }];
 }

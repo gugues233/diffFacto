@@ -6,6 +6,7 @@
 //
 
 #import "DesignPreviewModel.h"
+#import "CreatePageViewModel.h"
 
 @implementation DesignPreviewModel
 - (instancetype)initWithModelId:(NSString *)modelId data:(id)data previewImage:(UIImage *)previewImage {
@@ -18,6 +19,10 @@
         NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
         formatter.dateFormat = @"yyyy-MM-dd HH:mm";
         _createTime = [formatter stringFromDate:[NSDate date]];
+        
+        // 从缓存加载历史记录
+        CreatePageViewModel *viewModel = [[CreatePageViewModel alloc] init];
+        _createHistoryList = [viewModel getGenerateHistory];
     }
     return self;
 }

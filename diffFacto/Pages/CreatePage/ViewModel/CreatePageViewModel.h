@@ -21,6 +21,8 @@ NS_ASSUME_NONNULL_BEGIN
 - (void)startGenerateCompletion:(void(^)(BOOL success, id _Nullable result))completion progress:(void(^)(CGFloat progress))progressBlock;
 - (void)resetAllSelection;
 - (void)restoreSelectedItem:(id)item categoryIndex:(NSInteger)cIndex;
+- (void)addGenerateHistory:(id)result;
+- (NSMutableArray *)getGenerateHistory; // 获取历史记录
 @end
 
 NS_ASSUME_NONNULL_END

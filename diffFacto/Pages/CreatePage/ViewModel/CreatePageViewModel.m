@@ -6,6 +6,14 @@
 //
 
 #import "CreatePageViewModel.h"
+#import "CreateHistoryModel.h"
+
+@interface CreatePageViewModel ()
+
+// 在 ViewModel.h 或者 ViewModel.m 里添加
+@property (nonatomic, strong) NSMutableArray *generateHistoryList;
+
+@end
 
 @implementation CreatePageViewModel
 - (void)loadCategoryData {
@@ -66,7 +74,7 @@
         CreateCategoryModel *cat = self.categoryList[i];
         if (cat.selectedIndex >= 0) {
             CreateItemModel *item = cat.itemList[cat.selectedIndex];
-            CreateSelectedItemModel *selected = [[CreateSelectedItemModel alloc] initWithCategory:cat.categoryName image:item.itemImage index:i];
+            CreateSelectedItemModel *selected = [[CreateSelectedItemModel alloc] initWithCategory:cat.categoryName itemName:item.itemName image:item.itemImage categoryIndex:i itemIndex:cat.selectedIndex];
             [newSelected addObject:selected];
         }
     }
@@ -134,5 +142,40 @@
             break;
         }
     }
+}
+
+#pragma mark - 缓存
+- (void)addGenerateHistory:(id)result {
+    if (!result) return;
+
+    // 初始化数组
+    if (!_generateHistoryList) {
+        _generateHistoryList = [NSMutableArray array];
+    }
+
+    // 创建CreateHistoryModel对象
+    CreateHistoryModel *historyModel = [[CreateHistoryModel alloc] initWithProductName:@"我的设计" selectedItems:[self.selectedList copy] pointCloudModel:result];
+    
+    // 追加新数据
+    [_generateHistoryList addObject:historyModel];
+
+    // 保存到本地
+    [self saveHistoryToLocal];
+}
+
+// 保存到本地
+- (void)saveHistoryToLocal {
+    NSString *path = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    NSString *filePath = [path stringByAppendingPathComponent:@"GenerateHistory.data"];
+    [NSKeyedArchiver archiveRootObject:self.generateHistoryList toFile:filePath];
+    NSLog(@"✅ 缓存成功：%@", filePath);
+}
+
+// 读取历史
+- (NSMutableArray *)getGenerateHistory {
+    NSString *path = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+    NSString *filePath = [path stringByAppendingPathComponent:@"GenerateHistory.data"];
+    NSMutableArray *historyList = [NSKeyedUnarchiver unarchiveObjectWithFile:filePath];
+    return historyList ? historyList : [NSMutableArray array];
 }
 @end
