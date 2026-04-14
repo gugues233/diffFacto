@@ -20,26 +20,26 @@
 
 - (void)setupSubviews {
     // 1. 顶部分类滑动栏
-    self.categoryScrollView = [[CategoryScrollView alloc] initWithFrame:CGRectMake(0, 50, self.bounds.size.width, 100)];
+    self.categoryScrollView = [[CategoryScrollView alloc] initWithFrame:CGRectMake(0, 50, self.bounds.size.width, 130)];
     self.categoryScrollView.delegate = self;
     [self addSubview:self.categoryScrollView];
     
     // 2. 左侧已选列表
     CGFloat previewX = 100;
     CGFloat previewW = self.bounds.size.width - previewX - 20;
-    CGFloat previewH = self.bounds.size.height - 180;
-    self.selectedView = [[SelectedItemView alloc] initWithFrame:CGRectMake(10, 160, 80, previewH)];
+    CGFloat previewH = self.bounds.size.height - 200;
+    self.selectedView = [[SelectedItemView alloc] initWithFrame:CGRectMake(10, 190, 80, previewH)];
     [self addSubview:self.selectedView];
     
     // 3. 中间3D预览区
-    self.previewView = [[Preview3DView alloc] initWithFrame:CGRectMake(previewX, 160, previewW, previewH)];
+    self.previewView = [[Preview3DView alloc] initWithFrame:CGRectMake(previewX, 190, previewW, previewH)];
     self.previewView.layer.borderColor = [[UIColor systemGrayColor] colorWithAlphaComponent:0.3].CGColor;
     self.previewView.layer.borderWidth = 1;
     self.previewView.layer.cornerRadius = 12;
     [self addSubview:self.previewView];
     
     // 4. 生成按钮
-    self.generateButton = [[UIButton alloc] initWithFrame:CGRectMake(previewX + previewW - 120, 160 + previewH - 50, 100, 40)];
+    self.generateButton = [[UIButton alloc] initWithFrame:CGRectMake(previewX + previewW - 120, 190 + previewH - 50, 100, 40)];
     [self.generateButton setTitle:@"生成" forState:UIControlStateNormal];
     [self.generateButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     self.generateButton.backgroundColor = [UIColor systemBlueColor];
