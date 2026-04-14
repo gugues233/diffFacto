@@ -14,7 +14,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSArray<DesignStudioModel *> *modelList; // 瀑布流数据
 @property (nonatomic, assign, readonly) BOOL isRefreshing; // 是否正在刷新
 
-- (void)loadInitialData; // 加载初始数据
+- (void)loadInitialDataWithCompletion:(void(^)(BOOL success))completion; // 加载初始数据
 - (void)refreshNewDataCompletion:(void(^)(BOOL success))completion; // 下拉刷新
 @end
 

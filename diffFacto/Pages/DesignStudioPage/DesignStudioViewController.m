@@ -28,7 +28,14 @@
 
 - (void)setupViewModel {
     self.viewModel = [[DesignStudioViewModel alloc] init];
-    [self.viewModel loadInitialData];
+    __weak typeof(self) weakSelf = self;
+    [self.viewModel loadInitialDataWithCompletion:^(BOOL success) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (success) {
+            strongSelf.mainView.modelList = strongSelf.viewModel.modelList;
+            [strongSelf.mainView reloadData];
+        }
+    }];
 }
 
 - (void)setupMainView {
