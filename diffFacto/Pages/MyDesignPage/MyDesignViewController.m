@@ -35,6 +35,14 @@
     [self.view addGestureRecognizer:swipe];
 }
 
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    // 重新加载缓存列表，确保删除后能看到更新
+    [self.viewModel loadLocalCacheModels];
+    self.mainView.collectionView.modelList = self.viewModel.modelList;
+    [self.mainView.collectionView reloadData];
+}
+
 - (void)dismissSelf {
     [self dismissViewControllerAnimated:YES completion:nil];
 }

@@ -154,7 +154,9 @@
     }
 
     // 创建CreateHistoryModel对象
-    CreateHistoryModel *historyModel = [[CreateHistoryModel alloc] initWithProductName:@"我的设计" selectedItems:[self.selectedList copy] pointCloudModel:result];
+    // 为每个模型生成唯一的名称，使用时间戳
+    NSString *uniqueName = [NSString stringWithFormat:@"我的设计_%d", (int)[[NSDate date] timeIntervalSince1970]];
+    CreateHistoryModel *historyModel = [[CreateHistoryModel alloc] initWithProductName:uniqueName selectedItems:[self.selectedList copy] pointCloudModel:result];
     
     // 追加新数据
     [_generateHistoryList addObject:historyModel];

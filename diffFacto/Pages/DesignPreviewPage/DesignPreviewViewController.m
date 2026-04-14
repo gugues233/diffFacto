@@ -137,4 +137,10 @@
     [self.mainView updatePublicStatus:self.model.isPublic];
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+    [super viewWillDisappear:animated];
+    // 恢复导航栏
+    self.navigationController.navigationBar.hidden = NO;
+}
+
 @end
