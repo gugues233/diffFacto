@@ -48,6 +48,15 @@
 - (void)setupViewModel {
     self.viewModel = [[DesignPreviewViewModel alloc] init];
     self.viewModel.model = self.model;
+    
+    // 设置状态更新回调
+    __weak typeof(self) weakSelf = self;
+    self.viewModel.statusUpdateCompletion = ^(BOOL success, NSString *message) {
+        __strong typeof(weakSelf) strongSelf = weakSelf;
+        if (strongSelf) {
+            [strongSelf showAlertWithTitle:success ? @"成功" : @"失败" message:message];
+        }
+    };
 }
 
 - (void)setupMainView {

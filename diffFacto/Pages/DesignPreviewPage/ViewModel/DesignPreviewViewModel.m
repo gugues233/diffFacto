@@ -119,10 +119,109 @@
     NSLog(@"✅ 删除成功，更新缓存：%@", filePath);
 }
 
-- (void)togglePublicStatus {
-    self.model.isPublic = !self.model.isPublic;
-    // 实际项目：更新后端公开状态
-    NSLog(@"切换公开状态：%@ -> %@", self.model.modelId, self.model.isPublic ? @"公开" : @"私有");
+- (void)togglePublicStatus {    
+    self.model.isPublic = !self.model.isPublic;    
+    // 实际项目：更新后端公开状态    NSLog(@"切换公开状态：%@ -> %@", self.model.modelId, self.model.isPublic ? @"公开" : @"私有");    
+    // 当设置为公开时，向后端发送数据    
+    if (self.model.isPublic) {        
+        [self sendModelDataToBackend];    
+    }
+}
+
+- (void)sendModelDataToBackend {
+    // 准备要发送的数据    
+    NSMutableDictionary *postData = [NSMutableDictionary dictionary];    
+    postData[@"model_id"] = self.model.modelId;    
+    postData[@"is_public"] = @(self.model.isPublic);    
+    postData[@"create_time"] = self.model.createTime;
+    // 处理点云数据
+    if (self.model.pointCloudData) {
+        // 先判断是不是字符串，如果是，直接用
+        if ([self.model.pointCloudData isKindOfClass:[NSString class]]) {
+            postData[@"point_cloud_data"] = self.model.pointCloudData;
+        }
+        // 如果是 NSData，再转 base64
+        else if ([self.model.pointCloudData isKindOfClass:[NSData class]]) {
+            NSString *base64 = [self.model.pointCloudData base64EncodedStringWithOptions:0];
+            postData[@"point_cloud_data"] = base64;
+        }
+    }
+    // 处理使用的样式信息
+    if (self.model.createHistoryList && self.model.createHistoryList.count > 0) {
+        NSMutableArray *stylesArray = [NSMutableArray array];
+        for (CreateHistoryModel *history in self.model.createHistoryList) {
+            if (history.selectedItems && history.selectedItems.count > 0) {
+                for (id selectedItem in history.selectedItems) {
+                    if ([selectedItem respondsToSelector:@selector(categoryName)] &&
+                        [selectedItem respondsToSelector:@selector(itemName)]) {
+                        NSString *categoryName = [selectedItem performSelector:@selector(categoryName)];
+                        NSString *itemName = [selectedItem performSelector:@selector(itemName)];
+                        NSDictionary *styleDict = @{@"category": categoryName,
+                                                    @"style": itemName
+                        };
+                        [stylesArray addObject:styleDict];
+                    }
+                }
+            }
+        }
+        postData[@"styles"] = stylesArray;
+    }
+    // 转换为JSON数据
+    NSError *error = nil;    
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:postData options:NSJSONWritingPrettyPrinted error:&error];    
+    if (error) {        
+        NSLog(@"⚠️ JSON序列化失败：%@", error.localizedDescription);        
+        if (self.statusUpdateCompletion) {
+            dispatch_async(dispatch_get_main_queue(), ^{                
+                self.statusUpdateCompletion(NO, [NSString stringWithFormat:@"JSON序列化失败：%@", error.localizedDescription]);            
+            });
+        }
+        return;    
+    }
+    // 构建请求    
+    NSString *urlString = [NSString stringWithFormat:@"http://localhost:6006/api/models/%@/public", self.model.modelId];
+    NSURL *url = [NSURL URLWithString:urlString];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];    
+    [request setHTTPMethod:@"POST"];    
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];    
+    [request setHTTPBody:jsonData];
+    // 发送请求    
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {        
+        if (error) {            
+            NSLog(@"⚠️ 发送数据到后端失败：%@", error.localizedDescription);            
+            if (self.statusUpdateCompletion) {
+                dispatch_async(dispatch_get_main_queue(), ^{                    
+                    self.statusUpdateCompletion(NO, [NSString stringWithFormat:@"发送数据到后端失败：%@", error.localizedDescription]);                });
+            }
+        } else {
+            // 处理响应
+            if (data) {
+                NSError *jsonError = nil;
+                NSDictionary *responseDict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&jsonError];
+                if (jsonError) {
+                    NSLog(@"⚠️ 解析响应失败：%@", jsonError.localizedDescription);
+                    if (self.statusUpdateCompletion) {
+                        dispatch_async(dispatch_get_main_queue(), ^{                            
+                            self.statusUpdateCompletion(NO, [NSString stringWithFormat:@"解析响应失败：%@", jsonError.localizedDescription]);                        });
+                    }
+                } else {
+                    NSLog(@"✅ 发送数据到后端成功：%@", responseDict);
+                    if (self.statusUpdateCompletion) {
+                        dispatch_async(dispatch_get_main_queue(), ^{                            
+                            self.statusUpdateCompletion(YES, @"已设置为公开");                        
+                        });
+                    }
+                }
+            } else {
+                if (self.statusUpdateCompletion) {
+                    dispatch_async(dispatch_get_main_queue(), ^{                        
+                        self.statusUpdateCompletion(NO, @"未收到响应数据");                    
+                    });
+                }
+            }
+        }
+    }];
+    [task resume];
 }
 
 - (NSArray<CreateHistoryModel *> *)getCreateHistory {

@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface DesignPreviewViewModel : NSObject
 @property (nonatomic, strong) DesignPreviewModel *model; // 当前预览模型
+@property (nonatomic, copy) void (^statusUpdateCompletion)(BOOL success, NSString *message); // 状态更新回调
 
 - (void)shareToWeChat;          // 分享到微信
 - (void)saveAsImageWithCompletion:(void (^)(BOOL success, NSError * _Nullable error))completion;//另存为图片

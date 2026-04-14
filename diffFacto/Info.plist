@@ -25,5 +25,10 @@
 	<string>需要访问您的相册以选择照片用于上传</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
 	<string>需要访问相册以保存3D模型预览图片</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+    		<key>NSAllowsArbitraryLoads</key>
+    		<true/>
+	</dict>
 </dict>
 </plist>
