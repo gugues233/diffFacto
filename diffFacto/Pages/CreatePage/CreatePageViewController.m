@@ -82,6 +82,8 @@
             [strongSelf.mainView updateSelectedList:strongSelf.viewModel.selectedList];
             // 执行飞行动画
             [strongSelf.mainView addItemAnimationFromView:fromView];
+            // 重新加载分类滚动视图，更新选中状态
+            [strongSelf.mainView.categoryScrollView reloadData];
         }
     }];
 }

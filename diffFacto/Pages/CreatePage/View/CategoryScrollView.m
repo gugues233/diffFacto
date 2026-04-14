@@ -125,4 +125,9 @@
         }
     }
 }
+
+- (void)reloadData {
+    [self.collectionView reloadData];
+}
+
 @end

@@ -17,30 +17,80 @@
 
 @implementation CreatePageViewModel
 - (void)loadCategoryData {
-    // 模拟分类数据（实际项目从后端获取）
+    // 模拟后端数据传输和解析
+    NSDictionary *mockBackendData = @{
+        @"categories": @[
+            @{
+                @"name": @"背景",
+                @"items": @[
+                    @{@"id": @"bg_0", @"name": @"背景1", @"image": @"bg_0"},
+                    @{@"id": @"bg_1", @"name": @"背景2", @"image": @"bg_1"},
+                    @{@"id": @"bg_2", @"name": @"背景3", @"image": @"bg_2"},
+                    @{@"id": @"bg_3", @"name": @"背景4", @"image": @"bg_3"},
+                    @{@"id": @"bg_4", @"name": @"背景5", @"image": @"bg_4"},
+                    @{@"id": @"bg_5", @"name": @"背景6", @"image": @"bg_5"}
+                ]
+            },
+            @{
+                @"name": @"腿",
+                @"items": @[
+                    @{@"id": @"leg_0", @"name": @"腿1", @"image": @"leg_0"},
+                    @{@"id": @"leg_1", @"name": @"腿2", @"image": @"leg_1"},
+                    @{@"id": @"leg_2", @"name": @"腿3", @"image": @"leg_2"},
+                    @{@"id": @"leg_3", @"name": @"腿4", @"image": @"leg_3"},
+                    @{@"id": @"leg_4", @"name": @"腿5", @"image": @"leg_4"},
+                    @{@"id": @"leg_5", @"name": @"腿6", @"image": @"leg_5"}
+                ]
+            },
+            @{
+                @"name": @"桌面",
+                @"items": @[
+                    @{@"id": @"table_0", @"name": @"桌面1", @"image": @"table_0"},
+                    @{@"id": @"table_1", @"name": @"桌面2", @"image": @"table_1"},
+                    @{@"id": @"table_2", @"name": @"桌面3", @"image": @"table_2"},
+                    @{@"id": @"table_3", @"name": @"桌面4", @"image": @"table_3"},
+                    @{@"id": @"table_4", @"name": @"桌面5", @"image": @"table_4"},
+                    @{@"id": @"table_5", @"name": @"桌面6", @"image": @"table_5"}
+                ]
+            }
+        ]
+    };
+    
+    // 解析后端数据
     NSMutableArray *categories = [NSMutableArray array];
+    NSArray *backendCategories = mockBackendData[@"categories"];
     
-    // 分类1：背景
-    NSMutableArray *bgItems = [NSMutableArray array];
-    for (int i=0; i<6; i++) {
-        UIImage *img = [UIImage imageNamed:[NSString stringWithFormat:@"bg_%d", i]];
-        CreateItemModel *item = [[CreateItemModel alloc] initWithImage:img name:[NSString stringWithFormat:@"bg_%d", i]];
-        [bgItems addObject:item];
+    for (NSDictionary *categoryDict in backendCategories) {
+        NSString *categoryName = categoryDict[@"name"];
+        NSArray *itemDicts = categoryDict[@"items"];
+        
+        NSMutableArray *items = [NSMutableArray array];
+        for (NSDictionary *itemDict in itemDicts) {
+            NSString *itemId = itemDict[@"id"];
+            NSString *itemName = itemDict[@"name"];
+            NSString *imageName = itemDict[@"image"];
+            
+            // 模拟图片加载，如果图片不存在则使用默认图片
+            UIImage *img = [UIImage imageNamed:imageName];
+            if (!img) {
+                // 创建一个简单的彩色图片作为默认值
+                UIGraphicsBeginImageContext(CGSizeMake(100, 100));
+                [[UIColor colorWithRed:arc4random_uniform(255)/255.0 green:arc4random_uniform(255)/255.0 blue:arc4random_uniform(255)/255.0 alpha:1.0] setFill];
+                UIRectFill(CGRectMake(0, 0, 100, 100));
+                img = UIGraphicsGetImageFromCurrentImageContext();
+                UIGraphicsEndImageContext();
+            }
+            
+            CreateItemModel *item = [[CreateItemModel alloc] initWithImage:img name:itemName];
+            item.itemId = itemId;
+            [items addObject:item];
+        }
+        
+        CreateCategoryModel *category = [[CreateCategoryModel alloc] initWithName:categoryName items:items];
+        [categories addObject:category];
     }
-    CreateCategoryModel *bgCategory = [[CreateCategoryModel alloc] initWithName:@"背景" items:bgItems];
-    [categories addObject:bgCategory];
     
-    // 分类2：腿
-    NSMutableArray *legItems = [NSMutableArray array];
-    for (int i=0; i<6; i++) {
-        UIImage *img = [UIImage imageNamed:[NSString stringWithFormat:@"leg_%d", i]];
-        CreateItemModel *item = [[CreateItemModel alloc] initWithImage:img name:[NSString stringWithFormat:@"leg_%d", i]];
-        [legItems addObject:item];
-    }
-    CreateCategoryModel *legCategory = [[CreateCategoryModel alloc] initWithName:@"腿" items:legItems];
-    [categories addObject:legCategory];
-    
-    _categoryList = [categories copy];
+    _categoryList = categories;
     _selectedList = @[];
     _generateProgress = 0;
 }

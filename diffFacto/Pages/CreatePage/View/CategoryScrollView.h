@@ -18,6 +18,8 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong) NSArray<CreateCategoryModel *> *categoryList;
 @property (nonatomic, weak) id<CategoryScrollViewDelegate> delegate;
 @property (nonatomic, strong) UILabel *currentCategoryLabel; // 当前分类名
+
+- (void)reloadData; // 重新加载数据
 @end
 
 NS_ASSUME_NONNULL_END

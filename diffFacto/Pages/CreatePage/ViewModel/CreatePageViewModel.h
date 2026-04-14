@@ -12,7 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface CreatePageViewModel : NSObject
-@property (nonatomic, strong, readonly) NSArray<CreateCategoryModel *> *categoryList; // 所有分类
+@property (nonatomic, strong, readonly) NSMutableArray<CreateCategoryModel *> *categoryList; // 所有分类
 @property (nonatomic, strong, readonly) NSArray<CreateSelectedItemModel *> *selectedList; // 已选列表
 @property (nonatomic, assign, readonly) CGFloat generateProgress; // 生成进度
 
