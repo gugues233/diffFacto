@@ -103,23 +103,19 @@
 }
 
 - (void)saveAsImage {
-    UIImage *screenshot = [self.mainView.preview3DView captureScreenshot];
-    // 保存到相册
-    [[PHPhotoLibrary sharedPhotoLibrary] performChanges:^{
-        [PHAssetChangeRequest creationRequestForAssetFromImage:screenshot];
-    } completionHandler:^(BOOL success, NSError * _Nullable error) {
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (success) {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"保存成功" message:nil preferredStyle:UIAlertControllerStyleAlert];
-                [alert addAction:[UIAlertAction actionWithTitle:@"知道了" style:UIAlertActionStyleDefault handler:nil]];
-                [self presentViewController:alert animated:YES completion:nil];
-            } else {
-                UIAlertController *alert = [UIAlertController alertControllerWithTitle:@"保存失败" message:error.localizedDescription preferredStyle:UIAlertControllerStyleAlert];
-                [alert addAction:[UIAlertAction actionWithTitle:@"知道了" style:UIAlertActionStyleDefault handler:nil]];
-                [self presentViewController:alert animated:YES completion:nil];
-            }
-        });
+    [self.viewModel saveAsImageWithCompletion:^(BOOL success, NSError * _Nullable error) {
+        if (success) {
+            [self showAlertWithTitle:@"成功" message:@"图片已成功保存到相册"];
+        } else {
+            [self showAlertWithTitle:@"失败" message:error.localizedDescription];
+        }
     }];
+}
+
+- (void)showAlertWithTitle:(NSString *)title message:(NSString *)message {
+    UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+    [alert addAction:[UIAlertAction actionWithTitle:@"知道了" style:UIAlertActionStyleDefault handler:nil]];
+    [self presentViewController:alert animated:YES completion:nil];
 }
 
 - (void)showDeleteAlert {
