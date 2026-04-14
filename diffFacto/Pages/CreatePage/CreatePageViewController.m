@@ -90,12 +90,13 @@
 
 #pragma mark - CreatePageMainViewDelegate
 - (void)generateButtonDidClick {
+    // 清空旧的点云和重置进度条
+    [self.mainView.previewView resetPreview];
+    
     __weak typeof(self) weakSelf = self;
     [self.viewModel startGenerateCompletion:^(BOOL success, id  _Nullable result) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (success && result) {
-            // TODO: zxy-是需要在这里加缓存？
-            
             // ========================
             // 👉 生成成功 → 缓存结果
             // ========================
@@ -104,7 +105,6 @@
         }
     } progress:^(CGFloat progress) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
-        // TODO: zxy-生成进度这里，生成新的的时候，没有清空旧的，而且第二次进度条不是从0开始
         [strongSelf.mainView updateGenerateProgress:progress];
     }];
 }
