@@ -122,11 +122,25 @@
 
 - (void)togglePublicStatus {    
     self.model.isPublic = !self.model.isPublic;    
-    // 实际项目：更新后端公开状态    NSLog(@"切换公开状态：%@ -> %@", self.model.modelId, self.model.isPublic ? @"公开" : @"私有");    
+    // 实际项目：更新后端公开状态    NSLog(@"切换公开状态：%@ -&gt; %@", self.model.modelId, self.model.isPublic ? @"公开" : @"私有");    
     // 当设置为公开时，向后端发送数据    
     if (self.model.isPublic) {        
         [self sendModelDataToBackend];    
     }
+}
+
+- (NSArray *)convertSCNNodeToArray:(SCNNode *)node {
+    NSMutableArray *pointsArray = [NSMutableArray array];
+    
+    for (SCNNode *childNode in node.childNodes) {
+        if (childNode.geometry) {
+            SCNVector3 position = childNode.position;
+            NSArray *point = @[@(position.x), @(position.y), @(position.z)];
+            [pointsArray addObject:point];
+        }
+    }
+    
+    return [pointsArray copy];
 }
 
 - (void)sendModelDataToBackend {
@@ -155,9 +169,18 @@
                 postData[@"point_cloud_data"] = jsonString;
             }
         }
-        // 如果是 SCNNode，暂时不发送点云数据
+        // 如果是 SCNNode，先转换为数组再发送
         else if ([self.model.pointCloudData isKindOfClass:[SCNNode class]]) {
-            NSLog(@"⚠️ SCNNode 类型的点云数据无法直接发送到后端");
+            NSArray *pointCloudArray = [self convertSCNNodeToArray:(SCNNode *)self.model.pointCloudData];
+            NSError *jsonError = nil;
+            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:pointCloudArray options:NSJSONWritingPrettyPrinted error:&jsonError];
+            if (!jsonError) {
+                NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+                postData[@"point_cloud_data"] = jsonString;
+                NSLog(@"✅ SCNNode 转换为数组成功，共 %ld 个点", (long)pointCloudArray.count);
+            } else {
+                NSLog(@"⚠️ SCNNode 转换为 JSON 失败：%@", jsonError.localizedDescription);
+            }
         }
     }
     // 处理使用的样式信息

@@ -77,7 +77,7 @@
             
             for (NSDictionary *modelDict in modelsArray) {
                 NSString *modelId = modelDict[@"model_id"];
-                id pointCloudData = modelDict[@"pointcloud"]; // 注意字段名是 pointcloud 而不是 point_cloud_data
+                id pointCloudData = modelDict[@"point_cloud_data"]; // 注意字段名是 pointcloud 而不是 point_cloud_data
                 
                 // 转换点云数据为 SCNNode
                 SCNNode *pointCloudNode = [self convertPointCloudToSCNNode:pointCloudData];
@@ -108,12 +108,30 @@
 - (SCNNode *)convertPointCloudToSCNNode:(id)pointCloudData {
     SCNNode *pointCloudNode = [[SCNNode alloc] init];
     
-    if ([pointCloudData isKindOfClass:[NSArray class]]) {
-        NSArray *points = (NSArray *)pointCloudData;
+    id processedData = pointCloudData;
+    
+    // 如果是字符串格式，先解析为JSON
+    if ([pointCloudData isKindOfClass:[NSString class]] || [pointCloudData isKindOfClass:[NSMutableString class]]) {
+        NSLog(@"📋 点云数据是字符串格式，解析JSON");
+        NSString *jsonString = (NSString *)pointCloudData;
+        if (jsonString.length > 0) {
+            NSData *jsonData = [jsonString dataUsingEncoding:NSUTF8StringEncoding];
+            NSError *error = nil;
+            id parsed = [NSJSONSerialization JSONObjectWithData:jsonData options:NSJSONReadingMutableContainers error:&error];
+            if (!error && parsed) {
+                processedData = parsed;
+            } else {
+                NSLog(@"⚠️ 解析点云JSON失败：%@", error);
+            }
+        }
+    }
+    
+    if ([processedData isKindOfClass:[NSArray class]]) {
+        NSArray *points = (NSArray *)processedData;
         NSLog(@"📋 转换点云数据，共 %ld 个点", (long)points.count);
         
-        // 只处理前1000个点，避免性能问题
-        NSInteger pointCount = MIN(points.count, 1000);
+        // 只处理全部点
+        NSInteger pointCount = points.count;
         for (int i=0; i<pointCount; i++) {
             id pointObj = points[i];
             if ([pointObj isKindOfClass:[NSArray class]]) {
