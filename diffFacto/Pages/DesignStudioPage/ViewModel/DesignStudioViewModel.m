@@ -6,6 +6,7 @@
 //
 
 #import "DesignStudioViewModel.h"
+#import <SceneKit/SceneKit.h>
 
 @implementation DesignStudioViewModel
 - (void)loadInitialDataWithCompletion:(void(^)(BOOL success))completion {
@@ -76,12 +77,15 @@
             
             for (NSDictionary *modelDict in modelsArray) {
                 NSString *modelId = modelDict[@"model_id"];
-                id pointCloudData = modelDict[@"point_cloud_data"];
+                id pointCloudData = modelDict[@"pointcloud"]; // 注意字段名是 pointcloud 而不是 point_cloud_data
+                
+                // 转换点云数据为 SCNNode
+                SCNNode *pointCloudNode = [self convertPointCloudToSCNNode:pointCloudData];
                 
                 // 使用默认图片作为预览图
                 UIImage *previewImage = [UIImage imageNamed:@"studio_preview_0"];
                 
-                DesignStudioModel *model = [[DesignStudioModel alloc] initWithModelId:modelId previewImage:previewImage data:pointCloudData];
+                DesignStudioModel *model = [[DesignStudioModel alloc] initWithModelId:modelId previewImage:previewImage data:pointCloudNode];
                 [models addObject:model];
             }
             
@@ -99,6 +103,44 @@
         }
     }];
     [task resume];
+}
+
+- (SCNNode *)convertPointCloudToSCNNode:(id)pointCloudData {
+    SCNNode *pointCloudNode = [[SCNNode alloc] init];
+    
+    if ([pointCloudData isKindOfClass:[NSArray class]]) {
+        NSArray *points = (NSArray *)pointCloudData;
+        NSLog(@"📋 转换点云数据，共 %ld 个点", (long)points.count);
+        
+        // 只处理前1000个点，避免性能问题
+        NSInteger pointCount = MIN(points.count, 1000);
+        for (int i=0; i<pointCount; i++) {
+            id pointObj = points[i];
+            if ([pointObj isKindOfClass:[NSArray class]]) {
+                NSArray *point = (NSArray *)pointObj;
+                if (point.count >= 3) {
+                    // 获取坐标
+                    CGFloat x = [point[0] floatValue];
+                    CGFloat y = [point[1] floatValue];
+                    CGFloat z = [point[2] floatValue];
+                    
+                    // 创建球体作为点
+                    SCNGeometry *sphere = [SCNSphere sphereWithRadius:0.01];
+                    SCNNode *node = [SCNNode nodeWithGeometry:sphere];
+                    node.position = SCNVector3Make(x, y, z);
+                    
+                    // 设置颜色
+                    SCNMaterial *material = [SCNMaterial material];
+                    material.diffuse.contents = [UIColor colorWithRed:0.3 green:0.5 blue:0.8 alpha:1.0];
+                    sphere.materials = @[material];
+                    
+                    [pointCloudNode addChildNode:node];
+                }
+            }
+        }
+    }
+    
+    return pointCloudNode;
 }
 
 - (NSArray<DesignStudioModel *> *)getDefaultModels {

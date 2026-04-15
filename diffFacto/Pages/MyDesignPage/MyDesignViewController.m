@@ -130,17 +130,7 @@
     NSLog(@"📍 First model pointCloudData type: %@", [first.pointCloudData class]);
     NSLog(@"📍 Second model pointCloudData type: %@", [second.pointCloudData class]);
     
-    // 为每个模型创建独立的点云节点
-    SCNNode *firstPointCloudNode = [self createPointCloudNode];
-    SCNNode *secondPointCloudNode = [self createPointCloudNode];
-    
-    NSLog(@"📍 Created first node with %ld children", (long)firstPointCloudNode.childNodes.count);
-    NSLog(@"📍 Created second node with %ld children", (long)secondPointCloudNode.childNodes.count);
-    
-    first.pointCloudData = firstPointCloudNode;
-    second.pointCloudData = secondPointCloudNode;
-    
-    // 转换为对比页模型
+    // 转换为对比页模型（直接使用已有的 SCNNode 点云数据）
     DesignCompareModel *firstCompare = [[DesignCompareModel alloc] initWithModelId:first.modelId data:first.pointCloudData previewImage:first.previewImage];
     DesignCompareModel *secondCompare = [[DesignCompareModel alloc] initWithModelId:second.modelId data:second.pointCloudData previewImage:second.previewImage];
     
@@ -150,20 +140,6 @@
     // 跳转到对比页
     DesignCompareViewController *compareVC = [[DesignCompareViewController alloc] initWithFirstModel:firstCompare secondModel:secondCompare];
     [self.navigationController pushViewController:compareVC animated:YES];
-}
-
-- (SCNNode *)createPointCloudNode {
-    SCNNode *pointCloudNode = [[SCNNode alloc] init];
-    for (int i=0; i<2000; i++) {
-        // 增大球体半径，让点云更明显
-        SCNSphere *sphere = [SCNSphere sphereWithRadius:0.015];
-        SCNNode *node = [SCNNode nodeWithGeometry:sphere];
-        // 扩大点云范围，让点云更大
-        node.position = SCNVector3Make(arc4random()%200/100.0 - 1.0, arc4random()%200/100.0 - 1.0, arc4random()%200/100.0 - 1.0);
-        node.geometry.firstMaterial.diffuse.contents = [UIColor systemBlueColor];
-        [pointCloudNode addChildNode:node];
-    }
-    return pointCloudNode;
 }
 
 - (void)viewWillDisappear:(BOOL)animated {

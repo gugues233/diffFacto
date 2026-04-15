@@ -34,16 +34,22 @@
         [child removeFromParentNode];
     }];
     
-    // 模拟点云渲染（替换为真实数据）
-    SCNNode *pointCloudNode = [[SCNNode alloc] init];
-    for (int i=0; i<2000; i++) {
-        SCNSphere *sphere = [SCNSphere sphereWithRadius:0.008];
-        SCNNode *node = [SCNNode nodeWithGeometry:sphere];
-        node.position = SCNVector3Make(arc4random()%100/100.0 - 0.5, arc4random()%100/100.0 - 0.5, arc4random()%100/100.0 - 0.5);
-        node.geometry.firstMaterial.diffuse.contents = [UIColor systemBlueColor];
-        [pointCloudNode addChildNode:node];
+    if ([pointCloudData isKindOfClass:[SCNNode class]]) {
+        // 如果是 SCNNode 类型，直接添加到场景中
+        SCNNode *node = (SCNNode *)pointCloudData;
+        [self.scnView.scene.rootNode addChildNode:node];
+    } else {
+        // 模拟点云渲染（替换为真实数据）
+        SCNNode *pointCloudNode = [[SCNNode alloc] init];
+        for (int i=0; i<2000; i++) {
+            SCNSphere *sphere = [SCNSphere sphereWithRadius:0.008];
+            SCNNode *node = [SCNNode nodeWithGeometry:sphere];
+            node.position = SCNVector3Make(arc4random()%100/100.0 - 0.5, arc4random()%100/100.0 - 0.5, arc4random()%100/100.0 - 0.5);
+            node.geometry.firstMaterial.diffuse.contents = [UIColor systemBlueColor];
+            [pointCloudNode addChildNode:node];
+        }
+        [self.scnView.scene.rootNode addChildNode:pointCloudNode];
     }
-    [self.scnView.scene.rootNode addChildNode:pointCloudNode];
 }
 
 - (UIImage *)captureScreenshot {

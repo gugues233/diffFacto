@@ -61,17 +61,21 @@
 
 - (void)show3DPointCloud:(id)pointCloudData {
     // 实际项目：根据后端返回的点云数据创建3D节点
-    SCNNode *pointCloudNode = [[SCNNode alloc] init];
-    
-    // 模拟点云（实际替换为真实数据）
-    for (int i=0; i<500; i++) {
-        SCNGeometry *sphere = [SCNSphere sphereWithRadius:0.008];
-        SCNNode *node = [SCNNode nodeWithGeometry:sphere];
-        node.position = SCNVector3Make(arc4random()%100/100.0 - 0.5, arc4random()%100/100.0 - 0.5, arc4random()%100/100.0 - 0.5);
-        [pointCloudNode addChildNode:node];
+    if ([pointCloudData isKindOfClass:[SCNNode class]]) {
+        // 如果是 SCNNode 类型，直接添加到场景中
+        SCNNode *node = (SCNNode *)pointCloudData;
+        [self.scnView.scene.rootNode addChildNode:node];
+    } else {
+        // 模拟点云（实际替换为真实数据）
+        SCNNode *pointCloudNode = [[SCNNode alloc] init];
+        for (int i=0; i<500; i++) {
+            SCNGeometry *sphere = [SCNSphere sphereWithRadius:0.008];
+            SCNNode *node = [SCNNode nodeWithGeometry:sphere];
+            node.position = SCNVector3Make(arc4random()%100/100.0 - 0.5, arc4random()%100/100.0 - 0.5, arc4random()%100/100.0 - 0.5);
+            [pointCloudNode addChildNode:node];
+        }
+        [self.scnView.scene.rootNode addChildNode:pointCloudNode];
     }
-    
-    [self.scnView.scene.rootNode addChildNode:pointCloudNode];
 }
 
 - (void)showDefaultPointCloud {

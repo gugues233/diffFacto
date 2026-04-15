@@ -8,6 +8,7 @@
 #import "DesignPreviewViewModel.h"
 #import "CreatePageViewModel.h"
 #import <Photos/Photos.h>
+#import <SceneKit/SceneKit.h>
 
 @implementation DesignPreviewViewModel
 - (void)shareToWeChat {
@@ -144,6 +145,19 @@
         else if ([self.model.pointCloudData isKindOfClass:[NSData class]]) {
             NSString *base64 = [self.model.pointCloudData base64EncodedStringWithOptions:0];
             postData[@"point_cloud_data"] = base64;
+        }
+        // 如果是 NSArray，转换为 JSON 字符串
+        else if ([self.model.pointCloudData isKindOfClass:[NSArray class]]) {
+            NSError *jsonError = nil;
+            NSData *jsonData = [NSJSONSerialization dataWithJSONObject:self.model.pointCloudData options:NSJSONWritingPrettyPrinted error:&jsonError];
+            if (!jsonError) {
+                NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
+                postData[@"point_cloud_data"] = jsonString;
+            }
+        }
+        // 如果是 SCNNode，暂时不发送点云数据
+        else if ([self.model.pointCloudData isKindOfClass:[SCNNode class]]) {
+            NSLog(@"⚠️ SCNNode 类型的点云数据无法直接发送到后端");
         }
     }
     // 处理使用的样式信息
