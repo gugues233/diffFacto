@@ -25,7 +25,9 @@
     [self setupMainView];
     
     // 加载数据
-    [self.viewModel loadCategoryDataWithModelType:@"chair" completion:^(BOOL success) {
+    NSString *modelType = self.modelType ?: @"chair";
+    NSLog(@"📋 当前模型类型：%@", modelType);
+    [self.viewModel loadCategoryDataWithModelType:modelType completion:^(BOOL success) {
         if (success) {
             NSLog(@"✅ 风格库数据加载成功");
         } else {
@@ -140,8 +142,13 @@
 }
 
 - (instancetype)initWithHistory:(NSArray<CreateHistoryModel *> *)history {
+    return [self initWithModelType:@"chair" history:history];
+}
+
+- (instancetype)initWithModelType:(NSString *)modelType history:(NSArray<CreateHistoryModel *> *)history {
     self = [super init];
     if (self) {
+        _modelType = modelType ?: @"chair";
         _historyList = history;
     }
     return self;

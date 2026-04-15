@@ -55,21 +55,39 @@
                         CGContextRef context = UIGraphicsGetCurrentContext();
                         CGContextSetFillColorWithColor(context, [UIColor blackColor].CGColor);
                         
-                        // 简单的点云可视化：将3D点投影到2D平面
-                        CGFloat scale = 20.0; // 缩放因子
+                        // 斜上方视角投影参数
+                        CGFloat scale = 15.0; // 缩放因子
                         CGFloat centerX = 50.0;
                         CGFloat centerY = 50.0;
                         
-                        // 只绘制前100个点，避免性能问题
-                        NSInteger pointCount = MIN(points.count, 100);
+                        // 旋转角度（弧度）
+                        CGFloat angleX = M_PI / 6; // 绕X轴旋转30度（向下倾斜）
+                        CGFloat angleZ = M_PI / 4;  // 绕Z轴旋转45度（侧面视角）
+                        
+                        // 只绘制前200个点，避免性能问题
+                        NSInteger pointCount = MIN(points.count, 200);
                         for (int j = 0; j < pointCount; j++) {
                             NSArray *point = points[j];
                             if ([point isKindOfClass:[NSArray class]] && point.count >= 3) {
-                                CGFloat x = [point[0] floatValue] * scale + centerX;
-                                CGFloat y = [point[1] floatValue] * scale + centerY;
+                                CGFloat x3d = [point[0] floatValue];
+                                CGFloat y3d = [point[1] floatValue];
+                                CGFloat z3d = [point[2] floatValue];
+                                
+                                // 绕Z轴旋转
+                                CGFloat x1 = x3d * cos(angleZ) - y3d * sin(angleZ);
+                                CGFloat y1 = x3d * sin(angleZ) + y3d * cos(angleZ);
+                                CGFloat z1 = z3d;
+                                
+                                // 绕X轴旋转
+                                CGFloat y2 = y1 * cos(angleX) - z1 * sin(angleX);
+                                CGFloat z2 = y1 * sin(angleX) + z1 * cos(angleX);
+                                
+                                // 投影到2D平面
+                                CGFloat x2d = x1 * scale + centerX;
+                                CGFloat y2d = -y2 * scale + centerY; // 注意Y轴方向
                                 
                                 // 绘制点
-                                CGContextFillEllipseInRect(context, CGRectMake(x-1, y-1, 2, 2));
+                                CGContextFillEllipseInRect(context, CGRectMake(x2d-1, y2d-1, 2, 2));
                             }
                         }
                     } else {

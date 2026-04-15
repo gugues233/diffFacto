@@ -59,8 +59,21 @@
 }
 
 - (void)onNext {
-    NSLog(@"点击下一步 → 选中：%@", self.viewModel.dataArray[self.carouselView.currentIndex].title);
-    CreatePageViewController *vc = [[CreatePageViewController alloc] init];
+    NSString *selectedTitle = self.viewModel.dataArray[self.carouselView.currentIndex].title;
+    NSLog(@"点击下一步 → 选中：%@", selectedTitle);
+    
+    NSString *modelType = @"chair";
+    if ([selectedTitle isEqualToString:@"椅子"]) {
+        modelType = @"chair";
+    } else if ([selectedTitle isEqualToString:@"飞机"]) {
+        modelType = @"airplane";
+    } else if ([selectedTitle isEqualToString:@"台灯"]) {
+        modelType = @"lamp";
+    } else if ([selectedTitle isEqualToString:@"汽车"]) {
+        modelType = @"car";
+    }
+    
+    CreatePageViewController *vc = [[CreatePageViewController alloc] initWithModelType:modelType history:nil];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:nav animated:YES completion:nil];
