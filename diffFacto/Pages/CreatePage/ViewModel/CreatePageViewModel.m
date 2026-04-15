@@ -12,87 +12,201 @@
 
 // 在 ViewModel.h 或者 ViewModel.m 里添加
 @property (nonatomic, strong) NSMutableArray *generateHistoryList;
+// 添加属性存储模型类型
+@property (nonatomic, copy) NSString *modelType;
+
 
 @end
 
 @implementation CreatePageViewModel
-- (void)loadCategoryData {
-    // 模拟后端数据传输和解析
-    NSDictionary *mockBackendData = @{
-        @"categories": @[
-            @{
-                @"name": @"背景",
-                @"items": @[
-                    @{@"id": @"bg_0", @"name": @"背景1", @"image": @"bg_0"},
-                    @{@"id": @"bg_1", @"name": @"背景2", @"image": @"bg_1"},
-                    @{@"id": @"bg_2", @"name": @"背景3", @"image": @"bg_2"},
-                    @{@"id": @"bg_3", @"name": @"背景4", @"image": @"bg_3"},
-                    @{@"id": @"bg_4", @"name": @"背景5", @"image": @"bg_4"},
-                    @{@"id": @"bg_5", @"name": @"背景6", @"image": @"bg_5"}
-                ]
-            },
-            @{
-                @"name": @"腿",
-                @"items": @[
-                    @{@"id": @"leg_0", @"name": @"腿1", @"image": @"leg_0"},
-                    @{@"id": @"leg_1", @"name": @"腿2", @"image": @"leg_1"},
-                    @{@"id": @"leg_2", @"name": @"腿3", @"image": @"leg_2"},
-                    @{@"id": @"leg_3", @"name": @"腿4", @"image": @"leg_3"},
-                    @{@"id": @"leg_4", @"name": @"腿5", @"image": @"leg_4"},
-                    @{@"id": @"leg_5", @"name": @"腿6", @"image": @"leg_5"}
-                ]
-            },
-            @{
-                @"name": @"桌面",
-                @"items": @[
-                    @{@"id": @"table_0", @"name": @"桌面1", @"image": @"table_0"},
-                    @{@"id": @"table_1", @"name": @"桌面2", @"image": @"table_1"},
-                    @{@"id": @"table_2", @"name": @"桌面3", @"image": @"table_2"},
-                    @{@"id": @"table_3", @"name": @"桌面4", @"image": @"table_3"},
-                    @{@"id": @"table_4", @"name": @"桌面5", @"image": @"table_4"},
-                    @{@"id": @"table_5", @"name": @"桌面6", @"image": @"table_5"}
-                ]
-            }
-        ]
-    };
+// 修改 loadCategoryData 方法
+- (void)loadCategoryDataWithModelType:(NSString *)modelType completion:(void(^)(BOOL success))completion {
+    self.modelType = modelType;
     
-    // 解析后端数据
-    NSMutableArray *categories = [NSMutableArray array];
-    NSArray *backendCategories = mockBackendData[@"categories"];
-    
-    for (NSDictionary *categoryDict in backendCategories) {
-        NSString *categoryName = categoryDict[@"name"];
-        NSArray *itemDicts = categoryDict[@"items"];
-        
-        NSMutableArray *items = [NSMutableArray array];
-        for (NSDictionary *itemDict in itemDicts) {
-            NSString *itemId = itemDict[@"id"];
-            NSString *itemName = itemDict[@"name"];
-            NSString *imageName = itemDict[@"image"];
+    // 从后端获取风格库数据
+    [self fetchStyleLibraryFromBackendWithModelType:modelType completion:^(BOOL success, NSDictionary *styleLibraryData) {
+        if (success) {
+            // 解析风格库数据
+            NSMutableArray *categories = [NSMutableArray array];
+            NSLog(@"📋 开始解析风格库数据，共有 %ld 个部位", styleLibraryData.allKeys.count);
             
-            // 模拟图片加载，如果图片不存在则使用默认图片
-            UIImage *img = [UIImage imageNamed:imageName];
-            if (!img) {
-                // 创建一个简单的彩色图片作为默认值
-                UIGraphicsBeginImageContext(CGSizeMake(100, 100));
-                [[UIColor colorWithRed:arc4random_uniform(255)/255.0 green:arc4random_uniform(255)/255.0 blue:arc4random_uniform(255)/255.0 alpha:1.0] setFill];
-                UIRectFill(CGRectMake(0, 0, 100, 100));
-                img = UIGraphicsGetImageFromCurrentImageContext();
-                UIGraphicsEndImageContext();
+            // 遍历风格库中的每个部位
+            for (NSString *partName in styleLibraryData.allKeys) {
+                NSArray *styles = styleLibraryData[partName];
+                NSLog(@"📋 处理部位：%@，共有 %ld 个风格", partName, styles.count);
+                
+                NSMutableArray *items = [NSMutableArray array];
+                for (int i = 0; i < styles.count; i++) {
+                    NSDictionary *styleData = styles[i];
+                    NSString *itemId = [NSString stringWithFormat:@"%@_%d", partName, i];
+                    NSString *itemName = [NSString stringWithFormat:@"%@风格%d", partName, i+1];
+                    
+                    // 创建预览图片 - 使用点云数据生成预览
+                    UIGraphicsBeginImageContext(CGSizeMake(100, 100));
+                    
+                    // 使用白色背景
+                    [[UIColor whiteColor] setFill];
+                    UIRectFill(CGRectMake(0, 0, 100, 100));
+                    
+                    // 尝试从styleData中获取点云数据
+                    NSArray *points = styleData[@"points"];
+                    if (points && [points isKindOfClass:[NSArray class]] && points.count > 0) {
+                        // 绘制点云
+                        CGContextRef context = UIGraphicsGetCurrentContext();
+                        CGContextSetFillColorWithColor(context, [UIColor blackColor].CGColor);
+                        
+                        // 简单的点云可视化：将3D点投影到2D平面
+                        CGFloat scale = 20.0; // 缩放因子
+                        CGFloat centerX = 50.0;
+                        CGFloat centerY = 50.0;
+                        
+                        // 只绘制前100个点，避免性能问题
+                        NSInteger pointCount = MIN(points.count, 100);
+                        for (int j = 0; j < pointCount; j++) {
+                            NSArray *point = points[j];
+                            if ([point isKindOfClass:[NSArray class]] && point.count >= 3) {
+                                CGFloat x = [point[0] floatValue] * scale + centerX;
+                                CGFloat y = [point[1] floatValue] * scale + centerY;
+                                
+                                // 绘制点
+                                CGContextFillEllipseInRect(context, CGRectMake(x-1, y-1, 2, 2));
+                            }
+                        }
+                    } else {
+                        // 如果没有点云数据，使用文本作为占位符
+                        NSMutableParagraphStyle *textStyle = [[NSMutableParagraphStyle alloc] init];
+                        textStyle.alignment = NSTextAlignmentCenter;
+                        
+                        NSDictionary *attributes = @{
+                            NSFontAttributeName: [UIFont systemFontOfSize:12 weight:UIFontWeightMedium],
+                            NSForegroundColorAttributeName: [UIColor darkTextColor],
+                            NSParagraphStyleAttributeName: textStyle
+                        };
+                        
+                        [itemName drawInRect:CGRectMake(0, 40, 100, 20) withAttributes:attributes];
+                    }
+                    
+                    UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+                    UIGraphicsEndImageContext();
+                    
+                    if (img) {
+                        NSLog(@"✅ 成功创建图片：%@，大小：%@", itemName, NSStringFromCGSize(img.size));
+                        
+                        // 保存图片到文档目录，以便查看
+                        NSString *documentsPath = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
+                        NSString *imagePath = [documentsPath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png", itemName]];
+                        NSData *imageData = UIImagePNGRepresentation(img);
+                        [imageData writeToFile:imagePath atomically:YES];
+                        NSLog(@"✅ 图片保存到：%@", imagePath);
+                    } else {
+                        NSLog(@"❌ 创建图片失败：%@", itemName);
+                    }
+                    
+                    CreateItemModel *item = [[CreateItemModel alloc] initWithImage:img name:itemName];
+                    item.itemId = itemId;
+                    item.styleData = styleData; // 存储风格数据
+                    [items addObject:item];
+                    NSLog(@"✅ 添加风格项：%@", itemName);
+                }
+                NSLog(@"📋 部位 %@ 处理完成，共 %ld 个风格", partName, items.count);
+                
+                CreateCategoryModel *category = [[CreateCategoryModel alloc] initWithName:partName items:items];
+                [categories addObject:category];
+                NSLog(@"✅ 添加分类：%@，共 %ld 个风格", partName, items.count);
             }
+            
+            _categoryList = categories;
+            _selectedList = @[];
+            _generateProgress = 0;
+            NSLog(@"✅ 风格库数据解析完成，共 %ld 个分类", categories.count);
+            
+            if (completion) completion(YES);
+        } else {
+            // 使用默认数据
+            NSLog(@"⚠️ 使用默认数据");
+            [self loadDefaultCategoryData];
+            if (completion) completion(NO);
+        }
+    }];
+}
+
+- (void)loadDefaultCategoryData {
+    // 加载默认数据
+    NSMutableArray *categories = [NSMutableArray array];
+    
+    // 默认部位：back, seat, leg, arm
+    NSArray *partNames = @[@"back", @"seat", @"leg", @"arm"];
+    
+    for (NSString *partName in partNames) {
+        NSMutableArray *items = [NSMutableArray array];
+        for (int i = 0; i < 6; i++) {
+            NSString *itemId = [NSString stringWithFormat:@"%@_%d", partName, i];
+            NSString *itemName = [NSString stringWithFormat:@"%@风格%d", partName, i+1];
+            
+            // 创建默认图片
+            UIGraphicsBeginImageContext(CGSizeMake(100, 100));
+            [[UIColor colorWithRed:arc4random_uniform(255)/255.0 green:arc4random_uniform(255)/255.0 blue:arc4random_uniform(255)/255.0 alpha:1.0] setFill];
+            UIRectFill(CGRectMake(0, 0, 100, 100));
+            UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
+            UIGraphicsEndImageContext();
             
             CreateItemModel *item = [[CreateItemModel alloc] initWithImage:img name:itemName];
             item.itemId = itemId;
             [items addObject:item];
         }
         
-        CreateCategoryModel *category = [[CreateCategoryModel alloc] initWithName:categoryName items:items];
+        CreateCategoryModel *category = [[CreateCategoryModel alloc] initWithName:partName items:items];
         [categories addObject:category];
     }
     
     _categoryList = categories;
     _selectedList = @[];
     _generateProgress = 0;
+}
+
+- (void)fetchStyleLibraryFromBackendWithModelType:(NSString *)modelType completion:(void(^)(BOOL success, NSDictionary *styleLibraryData))completion {
+    // 构建请求
+    NSString *urlString = [NSString stringWithFormat:@"http://localhost:6006/api/style-library?model_type=%@", [modelType stringByAddingPercentEncodingWithAllowedCharacters:[NSCharacterSet URLQueryAllowedCharacterSet]]];
+    NSURL *url = [NSURL URLWithString:urlString];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    [request setHTTPMethod:@"GET"];
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    
+    // 发送请求
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        if (error) {
+            NSLog(@"⚠️ 请求风格库数据失败：%@", error.localizedDescription);
+            if (completion) completion(NO, nil);
+            return;
+        }
+        
+        // 处理响应
+        if (data) {
+            NSError *jsonError = nil;
+            NSDictionary *responseDict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&jsonError];
+            if (jsonError) {
+                NSLog(@"⚠️ 解析响应失败：%@", jsonError.localizedDescription);
+                if (completion) completion(NO, nil);
+                return;
+            }
+            
+            // 解析风格库数据
+            BOOL success = [responseDict[@"success"] boolValue];
+            if (success) {
+                NSDictionary *dataDict = responseDict[@"data"];
+                NSDictionary *styleLibraryData = dataDict[@"style_library"];
+                NSLog(@"✅ 成功获取风格库数据，包含 %ld 个部位", styleLibraryData.count);
+                if (completion) completion(YES, styleLibraryData);
+            } else {
+                NSLog(@"⚠️ 后端返回失败：%@", responseDict[@"message"]);
+                if (completion) completion(NO, nil);
+            }
+        } else {
+            NSLog(@"⚠️ 未收到响应数据");
+            if (completion) completion(NO, nil);
+        }
+    }];
+    [task resume];
 }
 
 - (void)selectItemAtIndex:(NSInteger)itemIndex categoryIndex:(NSInteger)categoryIndex completion:(void(^)(BOOL success))completion {
@@ -133,12 +247,14 @@
     if (completion) completion(YES);
 }
 
+// 修改 startGenerateCompletion 方法
 - (void)startGenerateCompletion:(void(^)(BOOL success, id _Nullable result))completion progress:(void(^)(CGFloat progress))progressBlock {
-    // 模拟后端生成进度（实际项目替换为网络请求）
+    // 模拟后端生成进度
     __block CGFloat progress = 0;
     dispatch_queue_t queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0);
     dispatch_async(queue, ^{
-        while (progress < 1.0) {
+        // 先显示加载进度
+        while (progress < 0.7) {
             progress += 0.01;
             _generateProgress = progress;
             dispatch_async(dispatch_get_main_queue(), ^{
@@ -147,10 +263,23 @@
             [NSThread sleepForTimeInterval:0.05];
         }
         
-        // 生成完成，返回3D点云数据（实际项目为后端返回的模型数据）
-        dispatch_async(dispatch_get_main_queue(), ^{
-            if (completion) completion(YES, @"3D_point_cloud_data");
-        });
+        // 从后端获取点云数据
+        [self fetchPointCloudFromBackendWithCompletion:^(BOOL success, id pointCloudData) {
+            // 完成剩余进度
+            while (progress < 1.0) {
+                progress += 0.01;
+                _generateProgress = progress;
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    if (progressBlock) progressBlock(progress);
+                });
+                [NSThread sleepForTimeInterval:0.02];
+            }
+            
+            // 生成完成，返回点云数据
+            dispatch_async(dispatch_get_main_queue(), ^{
+                if (completion) completion(success, pointCloudData);
+            });
+        }];
     });
 }
 
@@ -192,6 +321,75 @@
             break;
         }
     }
+}
+
+- (void)fetchPointCloudFromBackendWithCompletion:(void(^)(BOOL success, id pointCloudData))completion {
+    // 构建请求
+    NSString *urlString = @"http://localhost:6006/api/generate";
+    NSURL *url = [NSURL URLWithString:urlString];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:url];
+    [request setHTTPMethod:@"POST"];
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    
+    // 准备请求参数
+    NSMutableDictionary *selectedStyles = [NSMutableDictionary dictionary];
+    for (CreateSelectedItemModel *selectedItem in self.selectedList) {
+        // 找到对应的item，获取风格数据
+        CreateCategoryModel *category = self.categoryList[selectedItem.categoryIndex];
+        CreateItemModel *item = category.itemList[selectedItem.itemIndex];
+        selectedStyles[selectedItem.categoryName] = item.styleData;
+    }
+    
+    NSDictionary *requestBody = @{
+        @"model_type": self.modelType ?: @"chair",
+        @"selected_styles": selectedStyles
+    };
+    
+    NSError *error = nil;
+    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:requestBody options:NSJSONWritingPrettyPrinted error:&error];
+    if (error) {
+        NSLog(@"⚠️ 构建请求参数失败：%@", error.localizedDescription);
+        if (completion) completion(NO, nil);
+        return;
+    }
+    
+    [request setHTTPBody:jsonData];
+    
+    // 发送请求
+    NSURLSessionDataTask *task = [[NSURLSession sharedSession] dataTaskWithRequest:request completionHandler:^(NSData * _Nullable data, NSURLResponse * _Nullable response, NSError * _Nullable error) {
+        if (error) {
+            NSLog(@"⚠️ 请求点云数据失败：%@", error.localizedDescription);
+            if (completion) completion(NO, nil);
+            return;
+        }
+        
+        // 处理响应
+        if (data) {
+            NSError *jsonError = nil;
+            NSDictionary *responseDict = [NSJSONSerialization JSONObjectWithData:data options:NSJSONReadingMutableContainers error:&jsonError];
+            if (jsonError) {
+                NSLog(@"⚠️ 解析响应失败：%@", jsonError.localizedDescription);
+                if (completion) completion(NO, nil);
+                return;
+            }
+            
+            // 解析点云数据
+            BOOL success = [responseDict[@"success"] boolValue];
+            if (success) {
+                NSDictionary *dataDict = responseDict[@"data"];
+                id pointCloudData = dataDict[@"point_cloud"];
+                NSLog(@"✅ 成功获取点云数据，共 %@ 个点", dataDict[@"point_count"]);
+                if (completion) completion(YES, pointCloudData);
+            } else {
+                NSLog(@"⚠️ 后端返回失败：%@", responseDict[@"message"]);
+                if (completion) completion(NO, nil);
+            }
+        } else {
+            NSLog(@"⚠️ 未收到响应数据");
+            if (completion) completion(NO, nil);
+        }
+    }];
+    [task resume];
 }
 
 #pragma mark - 缓存

@@ -16,7 +16,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, strong, readonly) NSArray<CreateSelectedItemModel *> *selectedList; // 已选列表
 @property (nonatomic, assign, readonly) CGFloat generateProgress; // 生成进度
 
-- (void)loadCategoryData; // 加载分类数据
+- (void)loadCategoryDataWithModelType:(NSString *)modelType completion:(void(^)(BOOL success))completion;
 - (void)selectItemAtIndex:(NSInteger)itemIndex categoryIndex:(NSInteger)categoryIndex completion:(void(^)(BOOL success))completion;
 - (void)startGenerateCompletion:(void(^)(BOOL success, id _Nullable result))completion progress:(void(^)(CGFloat progress))progressBlock;
 - (void)resetAllSelection;

@@ -14,6 +14,7 @@
 - (instancetype)initWithFrame:(CGRect)frame {
     self = [super initWithFrame:frame];
     if (self) {
+        NSLog(@"📋 CategoryItemCell 初始化，frame：%@", NSStringFromCGRect(frame));
         [self setupUI];
     }
     return self;

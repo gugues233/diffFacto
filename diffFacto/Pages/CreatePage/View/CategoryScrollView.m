@@ -37,12 +37,20 @@
     self.layout.sectionInset = UIEdgeInsetsMake(-28, 15, 15, 15);
     
     self.collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, kCategoryHeaderHeight + 5, self.bounds.size.width, kItemSize+30) collectionViewLayout:self.layout];
-    self.collectionView.backgroundColor = [UIColor clearColor];
+    self.collectionView.backgroundColor = [UIColor systemBackgroundColor];
     self.collectionView.showsHorizontalScrollIndicator = NO;
     self.collectionView.dataSource = self;
     self.collectionView.delegate = self;
     [self.collectionView registerClass:[CategoryItemCell class] forCellWithReuseIdentifier:@"CategoryItemCell"];
     [self addSubview:self.collectionView];
+    NSLog(@"📋 CollectionView 背景色设置为：%@", [UIColor systemBackgroundColor]);
+    NSLog(@"📋 注册Cell类：%@，ReuseIdentifier：CategoryItemCell", NSStringFromClass([CategoryItemCell class]));
+}
+
+- (void)layoutSubviews {
+    [super layoutSubviews];
+    NSLog(@"📋 CategoryScrollView 布局：%@", NSStringFromCGRect(self.frame));
+    NSLog(@"📋 CollectionView 布局：%@", NSStringFromCGRect(self.collectionView.frame));
 }
 
 - (void)setupCategoryLabel {
@@ -63,7 +71,15 @@
         [offsets addObject:@(offset)];
     }
     self.categoryOffset = [offsets.firstObject floatValue];
-    [self.collectionView reloadData];
+    
+    // 确保在主线程上执行UI操作
+    if ([NSThread isMainThread]) {
+        [self.collectionView reloadData];
+    } else {
+        dispatch_async(dispatch_get_main_queue(), ^{ 
+            [self.collectionView reloadData];
+        });
+    }
 }
 
 #pragma mark - UICollectionView DataSource
@@ -77,7 +93,9 @@
 
 - (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath {
     CategoryItemCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:@"CategoryItemCell" forIndexPath:indexPath];
-    cell.model = self.categoryList[indexPath.section].itemList[indexPath.item];
+    CreateItemModel *model = self.categoryList[indexPath.section].itemList[indexPath.item];
+    NSLog(@"📋 设置Cell模型：%@，图片是否存在：%@", model.itemName, model.itemImage ? @"是" : @"否");
+    cell.model = model;
     return cell;
 }
 

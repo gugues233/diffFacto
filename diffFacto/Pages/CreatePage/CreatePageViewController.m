@@ -24,7 +24,38 @@
     [self setupViewModel];
     [self setupMainView];
     
-    [self restoreFromHistory];
+    // 加载数据
+    [self.viewModel loadCategoryDataWithModelType:@"chair" completion:^(BOOL success) {
+        if (success) {
+            NSLog(@"✅ 风格库数据加载成功");
+        } else {
+            NSLog(@"⚠️ 风格库数据加载失败，使用默认数据");
+        }
+        
+        // 检查数据
+        NSLog(@"📋 分类数量：%ld", self.viewModel.categoryList.count);
+        for (int i = 0; i < self.viewModel.categoryList.count; i++) {
+            CreateCategoryModel *category = self.viewModel.categoryList[i];
+            NSLog(@"📋 分类 %d：%@，风格数量：%ld", i, category.categoryName, category.itemList.count);
+            for (int j = 0; j < category.itemList.count; j++) {
+                CreateItemModel *item = category.itemList[j];
+                NSLog(@"📋 风格 %d：%@，图片是否存在：%@", j, item.itemName, item.itemImage ? @"是" : @"否");
+            }
+        }
+        
+        // 确保在主线程上执行UI操作
+        dispatch_async(dispatch_get_main_queue(), ^{ 
+            // 刷新UI
+            NSLog(@"📋 开始刷新UI");
+            self.mainView.categoryScrollView.categoryList = self.viewModel.categoryList;
+            NSLog(@"📋 设置categoryList完成");
+            [self.mainView.categoryScrollView reloadData];
+            NSLog(@"📋 刷新UI完成");
+            
+            // 恢复历史记录
+            [self restoreFromHistory];
+        });
+    }];
     
     // 👇 右滑关闭
     UISwipeGestureRecognizer *swipe = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(dismissSelf)];
@@ -61,7 +92,6 @@
 
 - (void)setupViewModel {
     self.viewModel = [[CreatePageViewModel alloc] init];
-    [self.viewModel loadCategoryData];
 }
 
 - (void)setupMainView {

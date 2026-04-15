@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, copy) NSString *itemName;
 @property (nonatomic, strong) UIImage *itemImage; // 选项图片
 @property (nonatomic, assign) BOOL isSelected;   // 是否选中
+@property (nonatomic, strong) NSDictionary *styleData; // 样式数据
 
 - (instancetype)initWithImage:(UIImage *)image name:(NSString *)name;
 @end
