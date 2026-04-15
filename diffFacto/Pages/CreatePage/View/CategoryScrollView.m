@@ -34,7 +34,7 @@
     self.layout.itemSize = CGSizeMake(kItemSize, kItemSize);
     self.layout.minimumInteritemSpacing = kItemSpacing;
     self.layout.minimumLineSpacing = kItemSpacing;
-    self.layout.sectionInset = UIEdgeInsetsMake(10, 15, 15, 15);
+    self.layout.sectionInset = UIEdgeInsetsMake(-28, 15, 15, 15);
     
     self.collectionView = [[UICollectionView alloc] initWithFrame:CGRectMake(0, kCategoryHeaderHeight + 5, self.bounds.size.width, kItemSize+30) collectionViewLayout:self.layout];
     self.collectionView.backgroundColor = [UIColor clearColor];

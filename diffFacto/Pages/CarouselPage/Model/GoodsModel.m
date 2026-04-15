@@ -13,7 +13,7 @@
         [self modelWithTitle:@"椅子"],
         [self modelWithTitle:@"飞机"],
         [self modelWithTitle:@"台灯"],
-        [self modelWithTitle:@"物品 4"],
+        [self modelWithTitle:@"汽车"],
     ];
 }
 

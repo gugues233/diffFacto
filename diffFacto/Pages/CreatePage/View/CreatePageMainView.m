@@ -28,18 +28,18 @@
     CGFloat previewX = 100;
     CGFloat previewW = self.bounds.size.width - previewX - 20;
     CGFloat previewH = self.bounds.size.height - 200;
-    self.selectedView = [[SelectedItemView alloc] initWithFrame:CGRectMake(10, 190, 80, previewH)];
+    self.selectedView = [[SelectedItemView alloc] initWithFrame:CGRectMake(10, 165, 80, previewH)];
     [self addSubview:self.selectedView];
     
     // 3. 中间3D预览区
-    self.previewView = [[Preview3DView alloc] initWithFrame:CGRectMake(previewX, 190, previewW, previewH)];
+    self.previewView = [[Preview3DView alloc] initWithFrame:CGRectMake(previewX, 165, previewW, previewH)];
     self.previewView.layer.borderColor = [[UIColor systemGrayColor] colorWithAlphaComponent:0.3].CGColor;
     self.previewView.layer.borderWidth = 1;
     self.previewView.layer.cornerRadius = 12;
     [self addSubview:self.previewView];
     
     // 4. 生成按钮
-    self.generateButton = [[UIButton alloc] initWithFrame:CGRectMake(previewX + previewW - 120, 190 + previewH - 50, 100, 40)];
+    self.generateButton = [[UIButton alloc] initWithFrame:CGRectMake(previewX + previewW - 120, 165 + previewH - 50, 100, 40)];
     [self.generateButton setTitle:@"生成" forState:UIControlStateNormal];
     [self.generateButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     self.generateButton.backgroundColor = [UIColor systemBlueColor];
