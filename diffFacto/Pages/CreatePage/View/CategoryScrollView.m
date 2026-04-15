@@ -57,7 +57,7 @@
     self.currentCategoryLabel = [[UILabel alloc] initWithFrame:CGRectMake(15, 0, 100, kCategoryHeaderHeight)];
     self.currentCategoryLabel.font = [UIFont systemFontOfSize:16 weight:UIFontWeightSemibold];
     self.currentCategoryLabel.textColor = [UIColor labelColor];
-    self.currentCategoryLabel.text = @"背景";
+    self.currentCategoryLabel.text = @"loading...";
     [self addSubview:self.currentCategoryLabel];
 }
 

@@ -396,8 +396,40 @@
             if (success) {
                 NSDictionary *dataDict = responseDict[@"data"];
                 id pointCloudData = dataDict[@"point_cloud"];
-                NSLog(@"✅ 成功获取点云数据，共 %@ 个点", dataDict[@"point_count"]);
-                if (completion) completion(YES, pointCloudData);
+                
+                NSLog(@"📋 point_cloud 类型：%@，是否为数组：%@", [pointCloudData class], [pointCloudData isKindOfClass:[NSArray class]] ? @"是" : @"否");
+                
+                NSArray *finalPointCloud = nil;
+                
+                if ([pointCloudData isKindOfClass:[NSArray class]]) {
+                    NSArray *pointArray = (NSArray *)pointCloudData;
+                    
+                    // 检查是否是嵌套数组（后端返回的数据可能被额外包装了一层）
+                    if (pointArray.count == 1 && [pointArray.firstObject isKindOfClass:[NSArray class]]) {
+                        // 取出第一个元素作为实际的点云数据
+                        finalPointCloud = pointArray.firstObject;
+                        NSLog(@"📋 检测到嵌套数组，解包后点云数量：%ld", (long)finalPointCloud.count);
+                    } else {
+                        // 直接使用原数组
+                        finalPointCloud = pointArray;
+                        NSLog(@"📋 直接使用点云数据，数量：%ld", (long)finalPointCloud.count);
+                    }
+                    
+                    // 验证第一个点的格式
+                    if (finalPointCloud.count > 0) {
+                        id firstPoint = finalPointCloud.firstObject;
+                        NSLog(@"📋 第一个点类型：%@，是否为数组：%@", [firstPoint class], [firstPoint isKindOfClass:[NSArray class]] ? @"是" : @"否");
+                        if ([firstPoint isKindOfClass:[NSArray class]] && [(NSArray *)firstPoint count] >= 3) {
+                            NSLog(@"✅ 成功获取点云数据，共 %ld 个点", (long)finalPointCloud.count);
+                        } else {
+                            NSLog(@"⚠️ 点格式不正确，期望包含3个坐标值");
+                        }
+                    }
+                } else {
+                    NSLog(@"⚠️ 点云数据格式不正确，类型：%@", [pointCloudData class]);
+                }
+                
+                if (completion) completion(YES, finalPointCloud);
             } else {
                 NSLog(@"⚠️ 后端返回失败：%@", responseDict[@"message"]);
                 if (completion) completion(NO, nil);
