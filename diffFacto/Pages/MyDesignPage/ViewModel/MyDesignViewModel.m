@@ -21,7 +21,7 @@
     NSMutableArray *models = [NSMutableArray array];
     for (CreateHistoryModel *history in historyList) {
         // 生成预览图片
-        UIImage *previewImage = [self generatePreviewImage];
+        UIImage *previewImage = [self generatePreviewImageWithPointCloud:history.pointCloudModel];
         
         MyDesignModel *model = [[MyDesignModel alloc] initWithModelId:history.productName previewImage:previewImage data:history.pointCloudModel];
         model.createTime = [self formatDate:history.createdDate];
@@ -33,8 +33,7 @@
     _isLongPressMode = NO;
 }
 
-- (UIImage *)generatePreviewImage {
-    // 生成一个简单的占位图
+- (UIImage *)generatePreviewImageWithPointCloud:(id)pointCloudData {
     CGSize size = CGSizeMake(200, 200);
     UIGraphicsBeginImageContextWithOptions(size, NO, 0);
     
@@ -44,15 +43,65 @@
     [[UIColor colorWithRed:0.95 green:0.95 blue:0.95 alpha:1.0] setFill];
     CGContextFillRect(context, CGRectMake(0, 0, size.width, size.height));
     
-    // 绘制模拟点云
-    for (int i = 0; i < 200; i++) {
-        CGFloat x = arc4random() % 180 + 10;
-        CGFloat y = arc4random() % 180 + 10;
-        CGFloat radius = arc4random() % 3 + 1;
+    // 检查点云数据
+    if ([pointCloudData isKindOfClass:[NSArray class]]) {
+        NSArray *points = (NSArray *)pointCloudData;
+        NSLog(@"📋 生成预览图，点云数据数量：%ld", (long)points.count);
         
-        UIColor *color = [UIColor colorWithRed:0.3 green:0.5 blue:0.8 alpha:0.8];
-        CGContextSetFillColorWithColor(context, color.CGColor);
-        CGContextFillEllipseInRect(context, CGRectMake(x, y, radius, radius));
+        // 绘制真实点云
+        CGContextSetFillColorWithColor(context, [UIColor colorWithRed:0.3 green:0.5 blue:0.8 alpha:0.8].CGColor);
+        
+        // 斜上方视角投影参数
+        CGFloat scale = 40.0; // 缩放因子
+        CGFloat centerX = size.width / 2;
+        CGFloat centerY = size.height / 2;
+        
+        // 旋转角度（弧度）
+        CGFloat angleX = M_PI / 6; // 绕X轴旋转30度（向下倾斜）
+        CGFloat angleZ = M_PI / 4;  // 绕Z轴旋转45度（侧面视角）
+        
+        // 只绘制前300个点，避免性能问题
+        NSInteger pointCount = MIN(points.count, 300);
+        for (int i = 0; i < pointCount; i++) {
+            id pointObj = points[i];
+            if ([pointObj isKindOfClass:[NSArray class]]) {
+                NSArray *point = (NSArray *)pointObj;
+                if (point.count >= 3) {
+                    CGFloat x3d = [point[0] floatValue];
+                    CGFloat y3d = [point[1] floatValue];
+                    CGFloat z3d = [point[2] floatValue];
+                    
+                    // 绕Z轴旋转
+                    CGFloat x1 = x3d * cos(angleZ) - y3d * sin(angleZ);
+                    CGFloat y1 = x3d * sin(angleZ) + y3d * cos(angleZ);
+                    CGFloat z1 = z3d;
+                    
+                    // 绕X轴旋转
+                    CGFloat y2 = y1 * cos(angleX) - z1 * sin(angleX);
+                    CGFloat z2 = y1 * sin(angleX) + z1 * cos(angleX);
+                    
+                    // 投影到2D平面
+                    CGFloat x2d = x1 * scale + centerX;
+                    CGFloat y2d = -y2 * scale + centerY; // 注意Y轴方向
+                    
+                    // 绘制点
+                    CGFloat radius = 1.5;
+                    CGContextFillEllipseInRect(context, CGRectMake(x2d - radius, y2d - radius, radius * 2, radius * 2));
+                }
+            }
+        }
+    } else {
+        // 生成模拟点云
+        NSLog(@"📋 生成预览图，使用模拟点云数据");
+        for (int i = 0; i < 200; i++) {
+            CGFloat x = arc4random() % 180 + 10;
+            CGFloat y = arc4random() % 180 + 10;
+            CGFloat radius = arc4random() % 3 + 1;
+            
+            UIColor *color = [UIColor colorWithRed:0.3 green:0.5 blue:0.8 alpha:0.8];
+            CGContextSetFillColorWithColor(context, color.CGColor);
+            CGContextFillEllipseInRect(context, CGRectMake(x, y, radius, radius));
+        }
     }
     
     UIImage *image = UIGraphicsGetImageFromCurrentImageContext();

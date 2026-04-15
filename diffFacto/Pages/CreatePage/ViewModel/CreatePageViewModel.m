@@ -467,8 +467,25 @@
 - (void)saveHistoryToLocal {
     NSString *path = [NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES) firstObject];
     NSString *filePath = [path stringByAppendingPathComponent:@"GenerateHistory.data"];
-    [NSKeyedArchiver archiveRootObject:self.generateHistoryList toFile:filePath];
-    NSLog(@"✅ 缓存成功：%@", filePath);
+    BOOL success = [NSKeyedArchiver archiveRootObject:self.generateHistoryList toFile:filePath];
+    if (success) {
+        NSLog(@"✅ 缓存成功：%@", filePath);
+    } else {
+        NSLog(@"❌ 缓存失败：%@", filePath);
+        // 检查数据大小
+        if (self.generateHistoryList) {
+            NSLog(@"📋 历史记录数量：%ld", self.generateHistoryList.count);
+            for (int i = 0; i < self.generateHistoryList.count; i++) {
+                CreateHistoryModel *model = self.generateHistoryList[i];
+                if (model.pointCloudModel) {
+                    NSLog(@"📋 模型 %d 点云数据类型：%@", i, [model.pointCloudModel class]);
+                    if ([model.pointCloudModel isKindOfClass:[NSArray class]]) {
+                        NSLog(@"📋 模型 %d 点云数据数量：%ld", i, [(NSArray *)model.pointCloudModel count]);
+                    }
+                }
+            }
+        }
+    }
 }
 
 // 读取历史
