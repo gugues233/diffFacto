@@ -105,7 +105,7 @@
 #pragma mark - DesignPreviewMainViewDelegate
 - (void)backButtonDidClick {
     NSLog(@"📋 backButtonDidClick 被调用");
-    [self.navigationController popViewControllerAnimated:YES];
+    [self dismissViewControllerAnimated:YES completion:nil];
 }
 
 // TODO: zxy-现在在遍历，看之后能不能只传递xxx
