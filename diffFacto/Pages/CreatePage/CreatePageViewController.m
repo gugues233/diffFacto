@@ -141,10 +141,6 @@
     }];
 }
 
-- (instancetype)initWithHistory:(NSArray<CreateHistoryModel *> *)history {
-    return [self initWithModelType:@"chair" history:history];
-}
-
 - (instancetype)initWithModelType:(NSString *)modelType history:(NSArray<CreateHistoryModel *> *)history {
     self = [super init];
     if (self) {

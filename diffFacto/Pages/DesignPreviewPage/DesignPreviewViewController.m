@@ -74,12 +74,13 @@
 }
 
 - (void)applyButtonClick {
-    NSArray *history = [self.viewModel getCreateHistory];
-
-    // 👇 关键：强制转换成正确的类，编译器就认识了
-    CreatePageViewController *createVC = [[CreatePageViewController alloc] initWithHistory:history];
-
-    [self.navigationController pushViewController:createVC animated:YES];
+    NSArray *historyList = [self.viewModel getCreateHistory];
+    CreateHistoryModel *latestHistory = historyList.firstObject;
+    
+    CreatePageViewController *vc = [[CreatePageViewController alloc] initWithModelType:latestHistory.modelType history:historyList];
+    UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
+    nav.modalPresentationStyle = UIModalPresentationFullScreen;
+    [self presentViewController:nav animated:YES completion:nil];
 }
 
 - (void)moreButtonDidClick {
