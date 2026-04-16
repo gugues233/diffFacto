@@ -14,7 +14,6 @@
 @interface CreatePageViewController () <CreatePageMainViewDelegate, CategoryScrollViewDelegate>
 @property (nonatomic, strong) CreatePageMainView *mainView;
 @property (nonatomic, strong) CreatePageViewModel *viewModel;
-@property (nonatomic, strong) NSArray<CreateHistoryModel *> *historyList;
 @end
 
 @implementation CreatePageViewController
@@ -57,7 +56,7 @@
             [self.mainView.categoryScrollView reloadData];
             NSLog(@"📋 刷新UI完成");
             
-            // 恢复历史记录
+            // 根据应用的模型的参数恢复
             [self restoreFromHistory];
         });
     }];
@@ -72,28 +71,31 @@
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
-// TODO: zxy-这里怎么也能直接取最新的一条呢？？
 - (void)restoreFromHistory {
-    if (!self.historyList.count) return;
-    
-    // 获取最近的一条历史记录
-    CreateHistoryModel *latestHistory = self.historyList.firstObject;
-    if (!latestHistory.selectedItems.count) return;
-    
-    // 遍历selectedItems，恢复选择
-    for (CreateSelectedItemModel *selectedItem in latestHistory.selectedItems) {
+    if (!self.appliedHistory) return;
+
+    CreateHistoryModel *history = self.appliedHistory;
+    if (!history.selectedItems.count) return;
+
+    for (CreateSelectedItemModel *selectedItem in history.selectedItems) {
         NSInteger cIndex = selectedItem.categoryIndex;
         NSInteger iIndex = selectedItem.itemIndex;
-        
+
         if (cIndex >= self.viewModel.categoryList.count) continue;
         if (iIndex < 0) continue;
-        
+
         CreateCategoryModel *category = self.viewModel.categoryList[cIndex];
         if (iIndex >= category.itemList.count) continue;
         
         // TODO: zxy-这又是个啥逻辑？
         // 直接使用itemIndex来选中对应的item
         [self.viewModel selectItemAtIndex:iIndex categoryIndex:cIndex completion:nil];
+    }
+
+    [self.mainView updateSelectedList:self.viewModel.selectedList];
+
+    if (history.pointCloudModel) {
+        [self.mainView show3DResult:history.pointCloudModel];
     }
 }
 
@@ -147,7 +149,8 @@
     self = [super init];
     if (self) {
         _modelType = modelType ?: @"chair";
-        _historyList = history;
+        // TODO: zxy-这里因为只传输了一条，所以取第一条。之后把逻辑更清晰一点，就不要用数组了
+        _appliedHistory = history.firstObject;
     }
     return self;
 }

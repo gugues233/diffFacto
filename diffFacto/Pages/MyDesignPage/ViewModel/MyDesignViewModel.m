@@ -26,8 +26,7 @@
         
         // 使用真实点云数据生成预览图片
         UIImage *previewImage = [self generatePreviewImageWithPointCloud:history.pointCloudModel];
-        
-        // TODO: zxy-真服了 咋又成productName了
+ 
         MyDesignModel *model = [[MyDesignModel alloc] initWithModelId:history.modelId previewImage:previewImage data:pointCloudNode modelType:history.modelType];
         model.createTime = [self formatDate:history.createdDate];
         [models addObject:model];

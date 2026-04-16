@@ -58,7 +58,6 @@
     DesignPreviewModel *previewModel = [[DesignPreviewModel alloc] initWithModelId:model.modelId data:model.pointCloudData previewImage:model.previewImage modelType:model.modelType];
     previewModel.isMyModel = NO;
     
-    // TODO: zxy-总是car问题应该在这里
     DesignPreviewViewController *previewVC = [[DesignPreviewViewController alloc] initWithModel:previewModel];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:previewVC];
     nav.modalPresentationStyle = UIModalPresentationFullScreen;

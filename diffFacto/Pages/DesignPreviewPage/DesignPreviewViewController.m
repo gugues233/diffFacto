@@ -108,7 +108,7 @@
     [self.navigationController popViewControllerAnimated:YES];
 }
 
-// TODO: zxy-这里逻辑不对，为什么取的是历史里面里面的数据？而且还总是第一个。应该按照ID或者什么来分辨
+// TODO: zxy-现在在遍历，看之后能不能只传递xxx
 - (void)applyButtonClick {
     NSLog(@"📋 applyButtonClick 被调用");
     NSArray *historyList = [self.viewModel getCreateHistory];
