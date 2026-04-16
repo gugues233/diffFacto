@@ -105,9 +105,9 @@
     // 找到要删除的模型并从数组中删除
     NSMutableArray *newHistoryList = [NSMutableArray array];
     for (id history in historyList) {
-        if ([history respondsToSelector:@selector(productName)]) {
-            NSString *productName = [history performSelector:@selector(productName)];
-            if (![productName isEqualToString:self.model.modelId]) {
+        if ([history respondsToSelector:@selector(modelId)]) {
+            NSString *modelId = [history performSelector:@selector(modelId)];
+            if (![modelId isEqualToString:self.model.modelId]) {
                 [newHistoryList addObject:history];
             }
         }
@@ -145,8 +145,9 @@
 
 - (void)sendModelDataToBackend {
     // 准备要发送的数据    
-    NSMutableDictionary *postData = [NSMutableDictionary dictionary];    
-    postData[@"model_id"] = self.model.modelId;    
+    NSMutableDictionary *postData = [NSMutableDictionary dictionary];
+    postData[@"model_type"] = self.model.modelType;
+    postData[@"model_id"] = self.model.modelId;
     postData[@"is_public"] = @(self.model.isPublic);    
     postData[@"create_time"] = self.model.createTime;
     // 处理点云数据

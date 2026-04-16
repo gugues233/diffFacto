@@ -8,9 +8,10 @@
 #import "MyDesignModel.h"
 
 @implementation MyDesignModel
-- (instancetype)initWithModelId:(NSString *)modelId previewImage:(UIImage *)previewImage data:(id)data {
+- (instancetype)initWithModelId:(NSString *)modelId previewImage:(UIImage *)previewImage data:(id)data modelType:(NSString *)modelType{
     self = [super init];
     if (self) {
+        _modelType = modelType;
         _modelId = modelId;
         _previewImage = previewImage;
         _pointCloudData = data;

@@ -17,6 +17,9 @@
         } else {
             // 如果请求失败，使用默认数据
             _modelList = [self getDefaultModels];
+            if (self.showAlertBlock) {
+                self.showAlertBlock(@"提示", @"请求失败，已加载模拟数据");
+            }
         }
         _isRefreshing = NO;
         if (completion) completion(YES);
@@ -77,7 +80,8 @@
             
             for (NSDictionary *modelDict in modelsArray) {
                 NSString *modelId = modelDict[@"model_id"];
-                id pointCloudData = modelDict[@"point_cloud_data"]; // 注意字段名是 pointcloud 而不是 point_cloud_data
+                id pointCloudData = modelDict[@"point_cloud_data"];
+                NSString *modelType = modelDict[@"model_type"];
                 
                 // 转换点云数据为 SCNNode
                 SCNNode *pointCloudNode = [self convertPointCloudToSCNNode:pointCloudData];
@@ -85,7 +89,7 @@
                 // 使用默认图片作为预览图
                 UIImage *previewImage = [UIImage imageNamed:@"studio_preview_0"];
                 
-                DesignStudioModel *model = [[DesignStudioModel alloc] initWithModelId:modelId previewImage:previewImage data:pointCloudNode];
+                DesignStudioModel *model = [[DesignStudioModel alloc] initWithModelId:modelId previewImage:previewImage data:pointCloudNode modelType:modelType];
                 [models addObject:model];
             }
             
@@ -105,6 +109,7 @@
     [task resume];
 }
 
+// 转换请求到的点云数据为 SCNNode
 - (SCNNode *)convertPointCloudToSCNNode:(id)pointCloudData {
     SCNNode *pointCloudNode = [[SCNNode alloc] init];
     
@@ -166,7 +171,7 @@
     NSMutableArray *models = [NSMutableArray array];
     for (int i=0; i<10; i++) {
         UIImage *preview = [UIImage imageNamed:[NSString stringWithFormat:@"studio_preview_%d", i]];
-        DesignStudioModel *model = [[DesignStudioModel alloc] initWithModelId:[NSString stringWithFormat:@"studio_%d", i] previewImage:preview data:nil];
+        DesignStudioModel *model = [[DesignStudioModel alloc] initWithModelId:[NSString stringWithFormat:@"studio_%d", i] previewImage:preview data:nil modelType:@"chair"];
         [models addObject:model];
     }
     return [models copy];

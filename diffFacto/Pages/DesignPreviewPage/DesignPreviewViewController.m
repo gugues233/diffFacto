@@ -108,12 +108,18 @@
     [self.navigationController popViewControllerAnimated:YES];
 }
 
+// TODO: zxy-这里逻辑不对，为什么取的是历史里面里面的数据？而且还总是第一个。应该按照ID或者什么来分辨
 - (void)applyButtonClick {
     NSLog(@"📋 applyButtonClick 被调用");
     NSArray *historyList = [self.viewModel getCreateHistory];
-    CreateHistoryModel *latestHistory = historyList.firstObject;
-
-    CreatePageViewController *vc = [[CreatePageViewController alloc] initWithModelType:latestHistory.modelType history:historyList];
+    CreateHistoryModel *matchedHistory = nil;
+    for (CreateHistoryModel *history in historyList) {
+        if ([history.modelId isEqualToString:self.model.modelId]) {
+            matchedHistory = history;
+            break;
+        }
+    }
+    CreatePageViewController *vc = [[CreatePageViewController alloc] initWithModelType:self.model.modelType history:matchedHistory ? @[matchedHistory] : nil];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.modalPresentationStyle = UIModalPresentationFullScreen;
     [self presentViewController:nav animated:YES completion:nil];

@@ -29,6 +29,12 @@
 - (void)setupViewModel {
     self.viewModel = [[DesignStudioViewModel alloc] init];
     __weak typeof(self) weakSelf = self;
+    self.viewModel.showAlertBlock = ^(NSString *title, NSString *message) {
+        UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:message preferredStyle:UIAlertControllerStyleAlert];
+        UIAlertAction *confirm = [UIAlertAction actionWithTitle:@"确认" style:UIAlertActionStyleDefault handler:nil];
+        [alert addAction:confirm];
+        [weakSelf presentViewController:alert animated:YES completion:nil];
+    };
     [self.viewModel loadInitialDataWithCompletion:^(BOOL success) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (success) {
@@ -49,9 +55,10 @@
 - (void)didSelectItemAtIndex:(NSInteger)index {
     // 点击放大：跳转到3D预览页
     DesignStudioModel *model = self.viewModel.modelList[index];
-    DesignPreviewModel *previewModel = [[DesignPreviewModel alloc] initWithModelId:model.modelId data:model.pointCloudData previewImage:model.previewImage];
+    DesignPreviewModel *previewModel = [[DesignPreviewModel alloc] initWithModelId:model.modelId data:model.pointCloudData previewImage:model.previewImage modelType:model.modelType];
     previewModel.isMyModel = NO;
     
+    // TODO: zxy-总是car问题应该在这里
     DesignPreviewViewController *previewVC = [[DesignPreviewViewController alloc] initWithModel:previewModel];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:previewVC];
     nav.modalPresentationStyle = UIModalPresentationFullScreen;

@@ -9,9 +9,10 @@
 #import "CreatePageViewModel.h"
 
 @implementation DesignPreviewModel
-- (instancetype)initWithModelId:(NSString *)modelId data:(id)data previewImage:(UIImage *)previewImage {
+- (instancetype)initWithModelId:(NSString *)modelId data:(id)data previewImage:(UIImage *)previewImage modelType:(NSString *)modelType{
     self = [super init];
     if (self) {
+        _modelType = modelType;
         _modelId = modelId;
         _pointCloudData = data;
         _previewImage = previewImage;

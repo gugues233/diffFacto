@@ -12,6 +12,7 @@
 NS_ASSUME_NONNULL_BEGIN
 
 @interface DesignPreviewModel : NSObject
+@property (nonatomic, copy) NSString *modelType; // 模型类别
 @property (nonatomic, copy) NSString *modelId;       // 模型ID
 @property (nonatomic, strong) id pointCloudData;    // 3D点云数据
 @property (nonatomic, strong) UIImage *previewImage;// 预览图
@@ -20,7 +21,7 @@ NS_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL isMyModel;
 @property (nonatomic, strong) NSArray<CreateHistoryModel *> *createHistoryList;
 
-- (instancetype)initWithModelId:(NSString *)modelId data:(id)data previewImage:(UIImage *)previewImage;
+- (instancetype)initWithModelId:(NSString *)modelId data:(id)data previewImage:(UIImage *)previewImage modelType:(NSString *)modelType;
 @end
 
 NS_ASSUME_NONNULL_END

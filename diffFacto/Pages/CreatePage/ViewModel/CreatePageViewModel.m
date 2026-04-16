@@ -10,11 +10,9 @@
 
 @interface CreatePageViewModel ()
 
-// 在 ViewModel.h 或者 ViewModel.m 里添加
 @property (nonatomic, strong) NSMutableArray *generateHistoryList;
-// 添加属性存储模型类型
 @property (nonatomic, copy) NSString *modelType;
-
+@property (nonatomic, copy) NSString *currentModelId;
 
 @end
 
@@ -396,6 +394,8 @@
             if (success) {
                 NSDictionary *dataDict = responseDict[@"data"];
                 id pointCloudData = dataDict[@"point_cloud"];
+                NSString *modelId = dataDict[@"model_id"];
+                _currentModelId = modelId;
                 
                 NSLog(@"📋 point_cloud 类型：%@，是否为数组：%@", [pointCloudData class], [pointCloudData isKindOfClass:[NSArray class]] ? @"是" : @"否");
                 
@@ -443,20 +443,16 @@
 }
 
 #pragma mark - 缓存
-- (void)addGenerateHistory:(id)result {
+- (void)addGenerateHistory:(id)result modelId:(NSString *)modelId {
     if (!result) return;
 
     // 初始化数组
     if (!_generateHistoryList) {
-        _generateHistoryList = [NSMutableArray array];
+        _generateHistoryList = [self getGenerateHistory];
     }
 
-    // 创建CreateHistoryModel对象
-    // 为每个模型生成唯一的名称，使用时间戳
-    NSString *uniqueName = [NSString stringWithFormat:@"我的设计_%d", (int)[[NSDate date] timeIntervalSince1970]];
-    CreateHistoryModel *historyModel = [[CreateHistoryModel alloc] initWithProductName:uniqueName selectedItems:[self.selectedList copy] pointCloudModel:result modelType:self.modelType];
-    
-    // 追加新数据
+    CreateHistoryModel *historyModel = [[CreateHistoryModel alloc] initWithModelId:modelId selectedItems:[self.selectedList copy] pointCloudModel:result modelType:self.modelType];
+
     [_generateHistoryList addObject:historyModel];
 
     // 保存到本地

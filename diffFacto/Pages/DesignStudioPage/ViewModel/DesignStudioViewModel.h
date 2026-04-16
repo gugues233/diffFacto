@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 @interface DesignStudioViewModel : NSObject
 @property (nonatomic, strong, readonly) NSArray<DesignStudioModel *> *modelList; // 瀑布流数据
 @property (nonatomic, assign, readonly) BOOL isRefreshing; // 是否正在刷新
+@property (nonatomic, copy, nullable) void (^showAlertBlock)(NSString *title, NSString *message); // 显示提示框回调
 
 - (void)loadInitialDataWithCompletion:(void(^)(BOOL success))completion; // 加载初始数据
 - (void)refreshNewDataCompletion:(void(^)(BOOL success))completion; // 下拉刷新

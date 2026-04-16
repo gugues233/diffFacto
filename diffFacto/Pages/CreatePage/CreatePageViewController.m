@@ -24,6 +24,9 @@
     [self setupViewModel];
     [self setupMainView];
     
+    // 重新加载分类滚动视图，更新选中状态
+    [self.mainView.categoryScrollView reloadData];
+    
     // 加载数据
     NSString *modelType = self.modelType ?: @"chair";
     NSLog(@"📋 当前模型类型：%@", modelType);
@@ -69,6 +72,7 @@
     [self dismissViewControllerAnimated:YES completion:nil];
 }
 
+// TODO: zxy-这里怎么也能直接取最新的一条呢？？
 - (void)restoreFromHistory {
     if (!self.historyList.count) return;
     
@@ -87,6 +91,7 @@
         CreateCategoryModel *category = self.viewModel.categoryList[cIndex];
         if (iIndex >= category.itemList.count) continue;
         
+        // TODO: zxy-这又是个啥逻辑？
         // 直接使用itemIndex来选中对应的item
         [self.viewModel selectItemAtIndex:iIndex categoryIndex:cIndex completion:nil];
     }
@@ -126,13 +131,10 @@
     [self.mainView.previewView resetPreview];
     
     __weak typeof(self) weakSelf = self;
-    [self.viewModel startGenerateCompletion:^(BOOL success, id  _Nullable result) {
+    [self.viewModel startGenerateCompletion:^(BOOL success, id _Nullable result) {
         __strong typeof(weakSelf) strongSelf = weakSelf;
         if (success && result) {
-            // ========================
-            // 👉 生成成功 → 缓存结果
-            // ========================
-            [strongSelf.viewModel addGenerateHistory:result];
+            [strongSelf.viewModel addGenerateHistory:result modelId:strongSelf.viewModel.currentModelId];
             [strongSelf.mainView show3DResult:result];
         }
     } progress:^(CGFloat progress) {
@@ -146,6 +148,17 @@
     if (self) {
         _modelType = modelType ?: @"chair";
         _historyList = history;
+    }
+    return self;
+}
+
+
+- (instancetype)initWithModelType:(NSString *)modelType selectedItems:(NSArray *)selectedItems pointCloudModel:(id)pointCloudModel {
+    self = [super init];
+    if (self) {
+        _modelType = modelType;
+        _selectedItems = selectedItems;
+        _pointCloudModel = pointCloudModel;
     }
     return self;
 }
