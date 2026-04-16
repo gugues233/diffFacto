@@ -23,9 +23,6 @@
     [self setupViewModel];
     [self setupMainView];
     
-    // 重新加载分类滚动视图，更新选中状态
-    [self.mainView.categoryScrollView reloadData];
-    
     // 加载数据
     NSString *modelType = self.modelType ?: @"chair";
     NSLog(@"📋 当前模型类型：%@", modelType);
