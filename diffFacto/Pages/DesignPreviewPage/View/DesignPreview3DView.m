@@ -6,6 +6,7 @@
 //
 
 #import "DesignPreview3DView.h"
+#import "DesignPreviewSCNView.h"
 
 @implementation DesignPreview3DView
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -17,7 +18,7 @@
 }
 
 - (void)setup3DView {
-    self.scnView = [[SCNView alloc] initWithFrame:self.bounds];
+    self.scnView = [[DesignPreviewSCNView alloc] initWithFrame:self.bounds];
     self.scnView.backgroundColor = [UIColor systemBackgroundColor];
     self.scnView.allowsCameraControl = YES; // 360度旋转查看
     self.scnView.autoenablesDefaultLighting = YES;

@@ -48,6 +48,12 @@
     // 操作菜单
     self.actionMenuView = [[MoreActionMenuView alloc] initWithFrame:CGRectZero];
     [self addSubview:self.actionMenuView];
+    
+    // 确保按钮在3D视图之上
+    [self bringSubviewToFront:self.backButton];
+    [self bringSubviewToFront:self.moreButton];
+    [self bringSubviewToFront:self.applyButton];
+    [self bringSubviewToFront:self.actionMenuView];
 }
 
 - (void)backClick {

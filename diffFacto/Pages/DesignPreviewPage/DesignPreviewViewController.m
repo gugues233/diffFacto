@@ -32,23 +32,57 @@
     self.navigationController.navigationBar.hidden = YES;
     [self setupViewModel];
     [self setupMainView];
-    
+
     __weak typeof(self) weakSelf = self;
     self.mainView.applyButtonBlock = ^{
         [weakSelf applyButtonClick];
     };
-    
+
     if (self.model.isMyModel) {
         [self.mainView showMyModelUI];
     } else {
         [self.mainView showOtherModelUI];
+    }
+    
+    // 调试：检查按钮状态
+    NSLog(@"📋 按钮状态 - backButton: %@, applyButton: %@, moreButton: %@", 
+          self.mainView.backButton.hidden ? @"hidden" : @"visible",
+          self.mainView.applyButton.hidden ? @"hidden" : @"visible",
+          self.mainView.moreButton.hidden ? @"hidden" : @"visible");
+    
+    NSLog(@"📋 按钮 userInteractionEnabled - backButton: %@, applyButton: %@, moreButton: %@", 
+          self.mainView.backButton.userInteractionEnabled ? @"YES" : @"NO",
+          self.mainView.applyButton.userInteractionEnabled ? @"YES" : @"NO",
+          self.mainView.moreButton.userInteractionEnabled ? @"YES" : @"NO");
+    
+    // 添加触摸事件监听
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(handleTap:)];
+    [self.view addGestureRecognizer:tapGesture];
+}
+
+- (void)handleTap:(UITapGestureRecognizer *)gesture {
+    CGPoint point = [gesture locationInView:self.view];
+    NSLog(@"📋 点击位置: (%f, %f)", point.x, point.y);
+    
+    // 检查是否点击到按钮
+    if (CGRectContainsPoint(self.mainView.backButton.frame, point)) {
+        NSLog(@"📋 点击到 backButton");
+        [self backButtonDidClick];
+    } else if (CGRectContainsPoint(self.mainView.applyButton.frame, point)) {
+        NSLog(@"📋 点击到 applyButton");
+        [self applyButtonClick];
+    } else if (CGRectContainsPoint(self.mainView.moreButton.frame, point)) {
+        NSLog(@"📋 点击到 moreButton");
+        [self moreButtonDidClick];
+    } else {
+        NSLog(@"📋 点击到其他位置");
     }
 }
 
 - (void)setupViewModel {
     self.viewModel = [[DesignPreviewViewModel alloc] init];
     self.viewModel.model = self.model;
-    
+
     // 设置状态更新回调
     __weak typeof(self) weakSelf = self;
     self.viewModel.statusUpdateCompletion = ^(BOOL success, NSString *message) {
@@ -70,13 +104,15 @@
 
 #pragma mark - DesignPreviewMainViewDelegate
 - (void)backButtonDidClick {
+    NSLog(@"📋 backButtonDidClick 被调用");
     [self.navigationController popViewControllerAnimated:YES];
 }
 
 - (void)applyButtonClick {
+    NSLog(@"📋 applyButtonClick 被调用");
     NSArray *historyList = [self.viewModel getCreateHistory];
     CreateHistoryModel *latestHistory = historyList.firstObject;
-    
+
     CreatePageViewController *vc = [[CreatePageViewController alloc] initWithModelType:latestHistory.modelType history:historyList];
     UINavigationController *nav = [[UINavigationController alloc] initWithRootViewController:vc];
     nav.modalPresentationStyle = UIModalPresentationFullScreen;
@@ -84,6 +120,7 @@
 }
 
 - (void)moreButtonDidClick {
+    NSLog(@"📋 moreButtonDidClick 被调用");
     // 菜单由视图内部处理
 }
 
@@ -147,6 +184,23 @@
     [super viewWillDisappear:animated];
     // 恢复导航栏
     self.navigationController.navigationBar.hidden = NO;
+    // 隐藏菜单，避免阻挡按钮
+    [self.mainView.actionMenuView dismissMenu];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    // 确保导航栏隐藏
+    self.navigationController.navigationBar.hidden = YES;
+    // 隐藏菜单
+    [self.mainView.actionMenuView dismissMenu];
+    
+    // 调试：检查按钮状态
+    NSLog(@"📋 viewWillAppear - 按钮状态");
+    NSLog(@"📋 按钮状态 - backButton: %@, applyButton: %@, moreButton: %@", 
+          self.mainView.backButton.hidden ? @"hidden" : @"visible",
+          self.mainView.applyButton.hidden ? @"hidden" : @"visible",
+          self.mainView.moreButton.hidden ? @"hidden" : @"visible");
 }
 
 @end
