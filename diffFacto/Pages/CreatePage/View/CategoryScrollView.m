@@ -61,6 +61,15 @@
     [self addSubview:self.currentCategoryLabel];
 }
 
+- (void)updateCurrentCategoryLabel {
+    if (self.categoryList.count > 0) {
+        CreateCategoryModel *category = self.categoryList[0];
+        if (![self.currentCategoryLabel.text isEqualToString:category.categoryName]) {
+            self.currentCategoryLabel.text = category.categoryName;
+        }
+    }
+}
+
 - (void)setCategoryList:(NSArray<CreateCategoryModel *> *)categoryList {
     _categoryList = categoryList;
     // 计算分类分界偏移量
@@ -75,9 +84,11 @@
     // 确保在主线程上执行UI操作
     if ([NSThread isMainThread]) {
         [self.collectionView reloadData];
+        [self updateCurrentCategoryLabel];
     } else {
         dispatch_async(dispatch_get_main_queue(), ^{ 
             [self.collectionView reloadData];
+            [self updateCurrentCategoryLabel];
         });
     }
 }
@@ -146,6 +157,7 @@
 
 - (void)reloadData {
     [self.collectionView reloadData];
+    [self updateCurrentCategoryLabel];
 }
 
 @end
